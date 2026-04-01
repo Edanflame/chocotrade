@@ -608,3 +608,118 @@ class DataManager(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class ConfigureManagerStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.SaveConfig = channel.unary_unary(
+                '/demo.ConfigureManager/SaveConfig',
+                request_serializer=service__pb2.SaveConfigListRequest.SerializeToString,
+                response_deserializer=service__pb2.SaveConfigReply.FromString,
+                _registered_method=True)
+        self.LoadConfig = channel.unary_unary(
+                '/demo.ConfigureManager/LoadConfig',
+                request_serializer=service__pb2.LoadConfigRequest.SerializeToString,
+                response_deserializer=service__pb2.LoadConfigReply.FromString,
+                _registered_method=True)
+
+
+class ConfigureManagerServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def SaveConfig(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def LoadConfig(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_ConfigureManagerServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'SaveConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.SaveConfig,
+                    request_deserializer=service__pb2.SaveConfigListRequest.FromString,
+                    response_serializer=service__pb2.SaveConfigReply.SerializeToString,
+            ),
+            'LoadConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.LoadConfig,
+                    request_deserializer=service__pb2.LoadConfigRequest.FromString,
+                    response_serializer=service__pb2.LoadConfigReply.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'demo.ConfigureManager', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('demo.ConfigureManager', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class ConfigureManager(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def SaveConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.ConfigureManager/SaveConfig',
+            service__pb2.SaveConfigListRequest.SerializeToString,
+            service__pb2.SaveConfigReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def LoadConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.ConfigureManager/LoadConfig',
+            service__pb2.LoadConfigRequest.SerializeToString,
+            service__pb2.LoadConfigReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

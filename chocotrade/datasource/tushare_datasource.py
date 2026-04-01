@@ -1,8 +1,12 @@
 """"""
+import logging
+
 import polars as pl
 import tushare as ts
 
-from ..database.sqlite_database import SqliteBoxDatabase
+from ..core.engine import MainEngine
+
+logger = logging.getLogger("tushare")
 
 
 class TushareDataSource:
@@ -29,15 +33,27 @@ class TushareDataSource:
 
     def init(self):
         """"""
-        sqlitebox = SqliteBoxDatabase()
-        self.api_token = sqlitebox.load("data_source", "tushare").get("api_token", None)
+        main_engine = MainEngine()
+        self.api_token = main_engine.load_config("data_source", "tushare").get("api_token", None)
+
+    def update_auth(self):
+        """"""
+        ts.set_token(self.api_token)
 
     def test(self, symbol):
-        print(self.pro)
-        print(self.api_token)
-        data = ts.pro_bar(
-            ts_code= symbol, adj='qfq', start_date='20180101', end_date='20261011'
-        )
+        if not self.pro:
+            return
+
+        self.update_auth()
+
+        try:
+            data = ts.pro_bar(
+                ts_code=symbol, adj='qfq', start_date='20180101', end_date='20261011'
+            )
+        except OSError as e:
+            logger.info(e)
+            return
+
         df = pl.from_pandas(data)
         df = df.select([
             pl.col("ts_code").alias("symbol"),
@@ -46,7 +62,7 @@ class TushareDataSource:
             pl.col("high"),
             pl.col("low"),
             pl.col("close"),
-            pl.col("vol").cast(pl.Float64).alias("volume") # 确保是 DOUBLE
+            pl.col("vol").cast(pl.Float64).alias("volume")
         ])
         ts_exchange = symbol.split(".")[1]
         if ts_exchange == "SZ":

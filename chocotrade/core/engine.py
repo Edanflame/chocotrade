@@ -2,6 +2,7 @@
 from threading import Lock
 
 from ..base.gateway import BaseGateway
+from ..database.sqlite_database import SqliteBoxDatabase
 from .event import Event, EventEngine, EventType, Handler
 
 
@@ -15,6 +16,7 @@ class MainEngine:
     _gms_engine = None
     _oms_engine = None
     _ems_engine = None
+    _cms_engine = None
 
     def __init__(self) -> None:
         """"""
@@ -30,6 +32,7 @@ class MainEngine:
                 instance._gms_engine = GmsEngine(main_controller=instance)
                 instance._oms_engine = OmsEngine(main_controller=instance)
                 instance._ems_engine = EmsEngine(main_controller=instance)
+                instance._cms_engine = CmsEngine(main_controller=instance)
 
                 cls._instance = instance
         return cls._instance
@@ -37,7 +40,7 @@ class MainEngine:
     def init(self) -> None:
         """"""
         self._event_engine.start()
-        self._aux_event_engine.start() # Auxiliary Event Engine
+        self._aux_event_engine.start()  # Auxiliary Event Engine
 
     def start(self) -> None:
         """"""
@@ -53,6 +56,18 @@ class MainEngine:
         self._oms_engine.add_gateway(gateway)
         self._ems_engine.add_gateway(gateway)
         return gateway
+
+    def save_config(self, category, name, config: dict) -> None:
+        """"""
+        self._cms_engine.save_config(
+            category, name, config
+        )
+
+    def load_config(self, category, name) -> dict:
+        """"""
+        return self._cms_engine.load_config(
+            category, name
+        )
 
     def send_order(
         self,
@@ -158,4 +173,24 @@ class EmsEngine:
         """"""
         pass
 
+
+class CmsEngine:
+    """
+    Configure Management System Engine
+    """
+    def __init__(self, main_controller, engine_name: str = "cms") -> None:
+        """"""
+        self.main = main_controller
+        self.configs: dict[str, dict] = {}
+        self.config_database = SqliteBoxDatabase()
+
+    def save_config(self, category, name, config: dict) -> None:
+        """"""
+        for key, value in config.items():
+            self.config_database.save(category, name, key, value)
+
+    def load_config(self, category, name) -> dict:
+        """"""
+        config = self.config_database.load(category, name)
+        return config
 

@@ -311,5 +311,3 @@ class BacktestManager(QObject):
 
     def handle_error(self, task_id, err_msg):
         logger.debug(f"任务 {task_id} 出错: {err_msg}")
-
-

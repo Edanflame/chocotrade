@@ -138,3 +138,35 @@ service DataManager {
   rpc SyncData (SyncDataRequest) returns (SyncDataReply) {}
   rpc GetOverview (GetOverviewRequest) returns (GetOverviewListReply) {}
 }
+
+// Configure Manager
+message ConfigFieldMsg {
+  string key = 1;
+  string value = 2;
+}
+
+message SaveConfigListRequest {
+  string category = 1;
+  string name = 2;
+  repeated ConfigFieldMsg fields = 3;
+  uint32 field_count = 4;
+}
+
+message SaveConfigReply {
+  string request_id = 1;
+}
+
+message LoadConfigRequest {
+  string category = 1;
+  string name = 2;
+}
+
+message LoadConfigReply {
+  repeated ConfigFieldMsg fields = 1;
+  uint32 field_count = 2;
+}
+
+service ConfigureManager {
+  rpc SaveConfig (SaveConfigListRequest) returns (SaveConfigReply) {}
+  rpc LoadConfig (LoadConfigRequest) returns (LoadConfigReply) {}
+}

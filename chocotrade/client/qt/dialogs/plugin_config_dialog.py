@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -29,12 +30,16 @@ COLORS = {
     "error": "#ffb4ab",
     "success": "#4ade80"
 }
+
+
 # ==========================================
 # 1. 独立弹窗：Plugin Configuration Dialog
 # ==========================================
 class PluginConfigDialog(QDialog):
-    def __init__(self, plugin_name, parent=None):
+    def __init__(self, plugin_name, config, parent=None):
         super().__init__(parent)
+        self.config = config
+
         self.setWindowTitle("Plugin Configuration")
         self.setFixedSize(760, 480)
 
@@ -155,17 +160,27 @@ class PluginConfigDialog(QDialog):
             vbox.addWidget(widget)
             return vbox
 
-        self.inp_endpoint = QLineEdit("wss://stream.binance.com:9443/ws")
-        self.inp_key = QLineEdit("AKIA****************")
-        self.inp_key.setEchoMode(QLineEdit.Password)
+        for field in self.config["auth_fields"]:
+            tmp = QLineEdit("****************")
+            tmp.setEchoMode(QLineEdit.Password)
+            tmp.addAction(
+                QIcon(str(load_source("src", "icons", "visibility.svg"))),
+                QLineEdit.TrailingPosition
+            )
+            setattr(self, field, tmp)
+            left_col.addLayout(create_input_group(field.upper(), getattr(self, field)))
 
-        # 在输入框右侧添加 visibility 图标
-        self.inp_key.addAction(
-            QIcon(str(load_source("src", "icons", "visibility.svg"))), QLineEdit.TrailingPosition
-        )
+        # self.inp_endpoint = QLineEdit("wss://stream.binance.com:9443/ws")
+        # self.inp_key = QLineEdit("AKIA****************")
+        # self.inp_key.setEchoMode(QLineEdit.Password)
 
-        left_col.addLayout(create_input_group("API ENDPOINT", self.inp_endpoint))
-        left_col.addLayout(create_input_group("ACCESS KEY ID", self.inp_key))
+        # # 在输入框右侧添加 visibility 图标
+        # self.inp_key.addAction(
+        #     QIcon(str(load_source("src", "icons", "visibility.svg"))), QLineEdit.TrailingPosition
+        # )
+
+        # left_col.addLayout(create_input_group("API ENDPOINT", self.inp_endpoint))
+        # left_col.addLayout(create_input_group("ACCESS KEY ID", self.inp_key))
 
         # # 滑动条
         # slider_vbox = QVBoxLayout()
@@ -199,41 +214,41 @@ class PluginConfigDialog(QDialog):
         right_col = QVBoxLayout()
         right_col.setSpacing(24)
 
-        # status_frame = QFrame()
-        # status_frame.setObjectName("StatusFrame")
-        # status_layout = QVBoxLayout(status_frame)
-        # status_layout.setContentsMargins(20, 20, 20, 20)
-        # status_layout.setSpacing(12)
+        status_frame = QFrame()
+        status_frame.setObjectName("StatusFrame")
+        status_layout = QVBoxLayout(status_frame)
+        status_layout.setContentsMargins(20, 20, 20, 20)
+        status_layout.setSpacing(12)
 
-        # health_title = QLabel("INSTANCE HEALTH")
-        # health_title.setStyleSheet(f"""
-        #     color: {COLORS['tertiary']}; font-weight: bold; font-size: 11px;
-        #     letter-spacing: 1px; background-color: {COLORS['surface_container_low']};
-        # """)
-        # status_layout.addWidget(health_title)
+        health_title = QLabel("INSTANCE HEALTH")
+        health_title.setStyleSheet(f"""
+            color: {COLORS['tertiary']}; font-weight: bold; font-size: 11px;
+            letter-spacing: 1px; background-color: {COLORS['surface_container_low']};
+        """)
+        status_layout.addWidget(health_title)
 
-        # def add_stat_row(name, val, val_color=COLORS['on_surface']):
-        #     row = QHBoxLayout()
-        #     lbl_name = QLabel(name)
-        #     lbl_name.setStyleSheet(f"""
-        #         color: {COLORS['on_surface_variant']}; font-size: 13px;
-        #         background-color: {COLORS['surface_container_low']};
-        #     """)
-        #     lbl_val = QLabel(val)
-        #     lbl_val.setStyleSheet(f"""
-        #         color: {val_color}; font-weight: bold; font-size: 13px;
-        #         background-color: {COLORS['surface_container_low']};
-        #     """)
-        #     row.addWidget(lbl_name)
-        #     row.addStretch()
-        #     row.addWidget(lbl_val)
-        #     status_layout.addLayout(row)
+        def add_stat_row(name, val, val_color=COLORS['on_surface']):
+            row = QHBoxLayout()
+            lbl_name = QLabel(name)
+            lbl_name.setStyleSheet(f"""
+                color: {COLORS['on_surface_variant']}; font-size: 13px;
+                background-color: {COLORS['surface_container_low']};
+            """)
+            lbl_val = QLabel(val)
+            lbl_val.setStyleSheet(f"""
+                color: {val_color}; font-weight: bold; font-size: 13px;
+                background-color: {COLORS['surface_container_low']};
+            """)
+            row.addWidget(lbl_name)
+            row.addStretch()
+            row.addWidget(lbl_val)
+            status_layout.addLayout(row)
 
-        # add_stat_row("Uptime", "99.98%")
-        # add_stat_row("Latent Median", "14ms")
-        # add_stat_row("Queue Depth", "Optimal", COLORS['success'])
-        # right_col.addWidget(status_frame)
-        # right_col.addStretch()
+        add_stat_row("Uptime", "99.98%")
+        add_stat_row("Latent Median", "14ms")
+        add_stat_row("Queue Depth", "Optimal", COLORS['success'])
+        right_col.addWidget(status_frame)
+        right_col.addStretch()
 
         # 按钮
         btn_layout = QHBoxLayout()
@@ -258,5 +273,6 @@ class PluginConfigDialog(QDialog):
 
     def get_configuration(self):
         return {
-            "key": self.inp_key.text()
+            # "key": self.inp_key.text()
+            field: getattr(self, field).text() for field in self.config["auth_fields"]
         }

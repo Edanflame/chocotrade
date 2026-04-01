@@ -38,7 +38,7 @@ class GreeterServicer(service_pb2_grpc.GreeterServicer):
 
 class BacktesterServicer(service_pb2_grpc.BacktesterServicer):
     """"""
-    def __init__(self, backtest_engine = backtest_engine):
+    def __init__(self, backtest_engine=backtest_engine):
         """"""
         super().__init__()
         self.backtest_engine = backtest_engine
@@ -110,7 +110,7 @@ class DataManagerServicer(service_pb2_grpc.DataManagerServicer):
     """"""
     def __init__(self):
         """"""
-        pass
+        super().__init__()
 
     def add_database(self):
         """"""
@@ -127,6 +127,9 @@ class DataManagerServicer(service_pb2_grpc.DataManagerServicer):
 
     def SaveData(self, data):
         """"""
+        if data is None:
+            return
+
         database = DuckBarsDatabase()
         database.update_bardata(data)
 
@@ -158,6 +161,44 @@ class DatafeedManager:
     def add_datafeed(self):
         """"""
         pass
+
+
+class ConfigureManagerServicer(service_pb2_grpc.ConfigureManagerServicer):
+    """"""
+    def __init__(self, engine=main_engine):
+        super().__init__()
+        self._engine = engine
+
+    def SaveConfig(self, request, context) -> None:
+        """"""
+        category = request.category
+        name = request.name
+
+        config_dict = {}
+        for field in request.fields:
+            config_dict[field.key] = field.value
+
+        self._engine.save_config(
+            category, name, config_dict
+        )
+
+        return service_pb2.SaveConfigReply(request_id="")
+
+    def LoadConfig(self, request, context) -> dict:
+        """"""
+        config_dict = self._engine.load_config(
+            request.category, request.name
+        )
+        field_list = []
+        for k, v in config_dict.items():
+            # 创建单个字段消息对象
+            field_msg = service_pb2.ConfigFieldMsg(key=str(k), value=str(v))
+            field_list.append(field_msg)
+
+        return service_pb2.LoadConfigReply(
+            fields=field_list,
+            field_count=len(field_list)
+        )
 
 
 class EventEngineServicer(service_pb2_grpc.EventEngineServicer):
@@ -218,6 +259,7 @@ def get_server(port="50051"):
     service_pb2_grpc.add_BacktesterServicer_to_server(BacktesterServicer(), server)
     service_pb2_grpc.add_GatewayManagerServicer_to_server(GatewayManagerServicer(), server)
     service_pb2_grpc.add_DataManagerServicer_to_server(DataManagerServicer(), server)
+    service_pb2_grpc.add_ConfigureManagerServicer_to_server(ConfigureManagerServicer(), server)
     service_pb2_grpc.add_EventEngineServicer_to_server(EventEngineServicer(), server)
     server.add_insecure_port(f'[::]:{port}')
     return server

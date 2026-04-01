@@ -70,6 +70,7 @@ def send_order(gateway_name="Pythoner", port="50051"):
         logger.info(f"[前端] 收到后端回复: {response.order_id}")
         return response.order_id
 
+
 def sync_data(gateway_name="Pythoner", port="50051", symbol=""):
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.DataManagerStub(channel)
@@ -77,11 +78,43 @@ def sync_data(gateway_name="Pythoner", port="50051", symbol=""):
         # logger.info(f"[前端] 收到后端回复: {response.order_id}")
         return response.data_id
 
+
 def get_overview(gateway_name="Pythoner", port="50051"):
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.DataManagerStub(channel)
         response = stub.GetOverview(service_pb2.GetOverviewRequest(data_id=""))
         dicts = [MessageToDict(r, preserving_proto_field_name=True) for r in response.results]
+        return dicts
+
+
+def save_config(gateway_name="Pythoner", port="50051", category="", name="", config=None):
+    if config is None:
+        config = {}
+
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.ConfigureManagerStub(channel)
+        field_list = []
+        for k, v in config.items():
+            # 创建单个字段消息对象
+            field_msg = service_pb2.ConfigFieldMsg(key=str(k), value=str(v))
+            field_list.append(field_msg)
+
+        response = stub.SaveConfig(
+            service_pb2.SaveConfigListRequest(
+                category=category,
+                name=name,
+                fields=field_list,
+                field_count=len(field_list)
+            )
+        )
+        return response.request_id
+
+
+def load_config(gateway_name="Pythoner", port="50051", category="", name=""):
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.ConfigureManagerStub(channel)
+        response = stub.LoadConfig(service_pb2.LoadConfigRequest(category=category, name=name))
+        dicts = [MessageToDict(r, preserving_proto_field_name=True) for r in response.fields]
         return dicts
 
 

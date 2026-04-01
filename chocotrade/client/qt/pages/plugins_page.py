@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from ....utilities import load_source
+from ...client import save_config
 from ..dialogs.plugin_config_dialog import PluginConfigDialog
 
 # ==========================================
@@ -51,12 +52,88 @@ SCROLLBAR_STYLE = f"""
     }}
 """
 
-# 已激活插件卡片组件
+PLUGINS = {
+    "Tushare Interface": {
+        "name": "tushare",
+        "desc": "Professional data gateway for Chinese A-shares, funds, and derivatives markets.",
+        "category": "database",
+        "star": "5",
+        "download": "100",
+        "is_new": False,
+        "auth_fields": ["api_token"]
+    },
+    "Okx Execution Gateway": {
+        "name": "okx",
+        "desc": "Direct market access through proprietary low-latency\
+            WebSocket and REST interfaces.",
+        "category": "hub",
+        "star": "5",
+        "download": "100",
+        "is_new": False,
+        "auth_fields": []
+    },
+    "TimescaleDB Interface": {
+        "name": "timescaledb",
+        "desc": "High-performance time-series database optimization for\
+            tick-level data storage and retrieval.",
+        "category": "database",
+        "star": "5",
+        "download": "100",
+        "is_new": False,
+        "auth_fields": []
+    },
+    "Redis Latency Buffer": {
+        "name": "redis",
+        "desc": "In-memory data structure store for rapid order execution feedback loops.",
+        "category": "memory",
+        "star": "4.9",
+        "download": "1.2k",
+        "is_new": True,
+        "auth_fields": []
+    },
+    "AWS S3 Cold Storage": {
+        "name": "aws_s3",
+        "desc": "Automated archiving of historical trading data and\
+            backtest results to the cloud.",
+        "category": "cloud_upload",
+        "star": "4.7",
+        "download": "842",
+        "is_new": False,
+        "auth_fields": []
+    },
+    "Vault Sentinel Bot": {
+        "name": "sentinel_bot",
+        "desc": "Receive real-time alerts and manage active positions\
+            via Telegram's secure interface.",
+        "category": "send",
+        "star": "5.0",
+        "download": "2.1k",
+        "is_new": False,
+        "auth_fields": []
+    },
+    "Polygon.io Stream": {
+        "name": "polygon",
+        "desc": "Institutional-grade market data feed for equities, forex, and crypto markets.",
+        "category": "timeline",
+        "star": "4.8",
+        "download": "1.5k",
+        "is_new": False,
+        "auth_fields": []
+    }
+}
 
+
+# 已激活插件卡片组件
 class ActivePluginCard(QFrame):
-    def __init__(self, title, desc, icon_name, is_active=True, parent=None):
+    # def __init__(self, config, title, desc, icon_name, is_active=True, parent=None):
+    def __init__(self, title, config, parent=None):
         super().__init__(parent)
-        self.title_str = title
+        self.config = config
+        self.title = title
+        desc = config["desc"]
+        icon_name = config["category"]
+        is_active = True
+
         self.setObjectName("ActiveCard")
         self.setStyleSheet(f"""
             /* 外层卡片本身的样式 (使用 # 限定) */
@@ -160,8 +237,12 @@ class ActivePluginCard(QFrame):
         layout.addLayout(btn_layout)
 
     def open_config(self):
-        dialog = PluginConfigDialog(self.title_str, self)
-        dialog.exec()
+        dialog = PluginConfigDialog(self.title, self.config, self)
+        if dialog.exec():
+            configuration = dialog.get_configuration()
+            save_config(category="data_source", name="tushare", config=configuration)
+        else:
+            pass
 
 
 # 可用插件卡片组件
@@ -397,34 +478,16 @@ class PluginManagementWidget(QWidget):
 
         # 3. 创建并添加卡片
         # 注意：在横向滚动区域，卡片需要设置固定宽度，否则会被压缩
-        def create_scroll_card(title, desc, icon):
-            card = ActivePluginCard(title, desc, icon)
-            card.setFixedWidth(400) # 设置一个合适的固定宽度
+        def create_scroll_card(title):
+            plugin = PLUGINS[title]
+            # card = ActivePluginCard(title, plugin["desc"], plugin["category"])
+            card = ActivePluginCard(title, plugin)
+            card.setFixedWidth(400)  # 设置一个合适的固定宽度
             return card
 
-        active_hbox.addWidget(
-            create_scroll_card(
-                "Tushare Interface",
-                "Professional data gateway for Chinese A-shares, funds, and derivatives markets.",
-                "database"
-            )
-        )
-        active_hbox.addWidget(
-            create_scroll_card(
-                "Okx Execution Gateway",
-                "Direct market access through proprietary low-latency\
-                    WebSocket and REST interfaces.",
-                "hub"
-            )
-        )
-        active_hbox.addWidget(
-            create_scroll_card(
-                "TimescaleDB Interface",
-                "High-performance time-series database optimization for\
-                    tick-level data storage and retrieval.",
-                "database"
-            )
-        )
+        active_hbox.addWidget(create_scroll_card("Tushare Interface"))
+        active_hbox.addWidget(create_scroll_card("Okx Execution Gateway"))
+        active_hbox.addWidget(create_scroll_card("TimescaleDB Interface"))
 
         # 4. 添加弹簧，防止卡片数量少时散开
         active_hbox.addStretch()
@@ -447,24 +510,25 @@ class PluginManagementWidget(QWidget):
         avail_grid.setSpacing(24)
 
         # 传入的第三个参数对应 src/icons/xxx.svg 的文件名
-        avail_plugins =[
-            ("Redis Latency Buffer",
-             "In-memory data structure store for rapid order execution feedback loops.",
-             "memory", "4.9", "1.2k", True),
-            ("AWS S3 Cold Storage",
-             "Automated archiving of historical trading data and backtest results to the cloud.",
-             "cloud_upload", "4.7", "842", False),
-            ("Vault Sentinel Bot",
-             "Receive real-time alerts and manage active positions via\
-                Telegram's secure interface.",
-             "send", "5.0", "2.1k", False),
-            ("Polygon.io Stream",
-             "Institutional-grade market data feed for equities, forex, and crypto markets.",
-             "timeline", "4.8", "1.5k", False)
+        avail_plugins = [
+            "Redis Latency Buffer",
+            "AWS S3 Cold Storage",
+            "Vault Sentinel Bot",
+            "Polygon.io Stream"
         ]
 
-        for i, (t, d, ic, r, dl, is_new) in enumerate(avail_plugins):
-            avail_grid.addWidget(AvailablePluginCard(t, d, ic, r, dl, is_new), i // 2, i % 2)
+        for i, title in enumerate(avail_plugins):
+            desc = PLUGINS[title]["desc"]
+            category = PLUGINS[title]["category"]
+            star = PLUGINS[title]["star"]
+            download = PLUGINS[title]["download"]
+            is_new = PLUGINS[title]["is_new"]
+            avail_grid.addWidget(
+                AvailablePluginCard(title, desc, category, star, download, is_new), i // 2, i % 2
+            )
+
+        # for i, (t, d, ic, r, dl, is_new) in enumerate(avail_plugins):
+        #     avail_grid.addWidget(AvailablePluginCard(t, d, ic, r, dl, is_new), i // 2, i % 2)
 
         content_layout.addLayout(avail_grid)
 
