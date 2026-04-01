@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package demo;
+
+// 定义请求消息
+message HelloRequest {
+  string name = 1;
+}
+
+// 定义响应消息
+message HelloReply {
+  string message = 1;
+}
+
+// 定义服务
+service Greeter {
+  // 发送一个招呼
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+// 回测服务
+message BacktestRequest {
+  string name = 1;
+}
+
+message BacktestResultReply {
+  string start_date = 1;
+  string end_date = 2;
+  uint32 total_days = 3;
+
+  uint32 profit_days = 4;
+  uint32 loss_days = 5;
+  float total_net_pnl = 6;
+  float daily_net_pnl = 7;
+
+  float total_commission = 8;
+  float daily_commission = 9;
+  float total_slippage = 10;
+  float daily_slippage = 11;
+  float total_turnover = 12;
+  float daily_turnover = 13;
+
+  uint64 total_trade_count = 14;
+  float daily_trade_count = 15;
+
+  float end_balance = 16;
+  float total_return = 17;
+  float annual_return = 18;
+  float daily_return = 19;
+  float return_std = 20;
+
+  float max_drawdown = 21;
+  float max_ddpercent = 22;
+  uint64 max_drawdown_duration = 23;
+  float sharpe_ratio = 24;
+  float ewm_sharpe = 25;
+  float return_drawdown_ratio = 26;
+  float rgr_ratio = 27;
+}
+
+message BacktestListReply {
+    repeated BacktestResultReply results = 1;
+    uint32 total_count = 2;
+}
+
+service Backtester {
+  rpc StartBacktest (BacktestRequest) returns (BacktestResultReply) {}
+  rpc GetAllBacktestResults (BacktestRequest) returns (BacktestListReply) {}
+  rpc GetTargetBacktestResult (BacktestRequest) returns (BacktestResultReply) {}
+  rpc StartTest (BacktestRequest) returns (BacktestResultReply) {}
+}
+
+
+message GatewayRequest {
+  string gateway_name = 1;
+}
+
+message GatewayReply {
+  string message = 1;
+}
+
+message SendOrderRequest {
+  string gateway_name = 1;
+}
+
+message SendOrderReply {
+  string order_id = 1;
+}
+
+// gateway管理
+service GatewayManager {
+  rpc AddGateway (GatewayRequest) returns (GatewayReply) {}
+
+  rpc SendOrder (SendOrderRequest) returns (SendOrderReply) {}
+}
+
+
+message Empty {}
+
+message EventReply {
+  string name = 1;
+  string data = 2;
+}
+
+// 事件引擎
+service EventEngine {
+    rpc SubscribeEvents (Empty) returns (stream EventReply);
+}
+
+
+// 数据管理服务
+message SyncDataRequest {
+  string symbol = 1;
+}
+
+message SyncDataReply {
+  string data_id = 1;
+}
+
+message GetOverviewRequest {
+  string data_id = 1;
+}
+
+message GetOverviewReply {
+  string exchange = 1;
+  string symbol = 2;
+  uint32 total = 3;
+  string start_dt_str = 4;
+  string end_dt_str = 5;
+}
+
+message GetOverviewListReply {
+  repeated GetOverviewReply results = 1;
+  uint32 total_count = 2;
+}
+
+service DataManager {
+  rpc SyncData (SyncDataRequest) returns (SyncDataReply) {}
+  rpc GetOverview (GetOverviewRequest) returns (GetOverviewListReply) {}
+}

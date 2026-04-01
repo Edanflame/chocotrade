@@ -1,0 +1,97 @@
+[build-system]
+requires = ["scikit-build-core>=0.5.0", "pybind11", "setuptools", "wheel"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "chocotrade"
+dynamic = ["version"]
+authors = [{name = "Ives Guo", email = "guoyifan003@gmail.com"}]
+description = "A framework for developing quant trading systems."
+dependencies = [
+    "duckdb>=1.3.2",
+    "grpcio>=1.70.0",
+    "httpx[http2]>=0.28.1",
+    "numpy>=2.1.0",
+    "polars>=1.8.2",
+    "protobuf>=5.29.6",
+    "pyarrow>=17.0.0",
+    "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.1",
+    "pyside6>=6.11.0",
+    "rumps>=0.4.0",
+    "textual>=8.0.2",
+    "tushare>=1.4.29",
+    "typer>=0.24.1",
+    "websockets>=16.0",
+]
+readme = "README.md"
+requires-python = ">=3.13"
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: MacOS",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: Implementation :: CPython"
+]
+
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "chocotrade/_version.py"
+
+[tool.scikit-build]
+# 指定 Python 包目录
+wheel.packages = ["chocotrade"]
+
+[tool.setuptools.package-data]
+# 告诉工具包含 chocotrade 包下 scr 目录里的所有 png 文件
+chocotrade = ["scr/*.png"]
+
+[dependency-groups]
+dev = [
+    "grpcio-tools>=1.70.0",
+    "pytest>=9.0.2",
+    "ruff>=0.15.4",
+]
+
+[tool.ruff]
+# 检查的目录
+src = ["chocotrade"]
+# 忽略特定的文件夹
+extend-exclude = [
+    "chocotrade/protos_generated",  # 忽略 gRPC 生成的代码
+]
+# 目标 Python 版本
+target-version = "py313"
+# 每行最大长度
+line-length = 100
+
+[tool.ruff.lint]
+# 选择检查规则
+select = [
+  "E",  # E/W: Pycodestyle (基础规范)
+  "W",  # E/W: Pycodestyle (基础规范)
+  "F",  # F: Pyflakes (逻辑错误，如变量未定义)
+  "I",  # I: Isort (导入排序)
+  "B",  # B: Flake8-bugbear (潜在 Bug)
+  "UP", # UP: Pyupgrade (现代语法建议)
+  "N"
+]
+
+# 忽略特定规则
+ignore = ["N802", "N803", "N805"] # 比如忽略函数名大小写限制（如果你的 C++ 接口是驼峰式）
+
+[tool.ruff.lint.per-file-ignores]
+# 关键：对自动生成的 gRPC 代码完全忽略检查
+"chocotrade/generated/**" = ["ALL"]
+
+[tool.ruff.format]
+# 启用代码格式化（替代 Black）
+quote-style = "double"
+indent-style = "space"
+
+[project.scripts]
+# 格式：命令名 = "包名.文件名:函数名"
+chocotrade = "chocotrade.__main__:main"
