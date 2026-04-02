@@ -20,6 +20,7 @@ from .qt.pages.backtest_page import BacktestPage
 from .qt.pages.dashboard_page import DashboardPage
 from .qt.pages.marketdata_page import MarketDataPage
 from .qt.pages.plugins_page import PluginManagementWidget as PluginsPage
+from .qt.pages.research_page import ResearchPage
 
 # --- 1. 配置与常量 ---
 COLORS = {
@@ -239,6 +240,7 @@ class SideBar(QFrame):
             ("query_stats", "Strategies", 2),
             ("history_toggle_off", "Backtests", 3),
             ("database", "Market Data", 4),
+            ("experiment", "Research", 5),
         ]
 
         for icon, text, index in self.menus:
@@ -346,12 +348,14 @@ class MainWindow(QMainWindow):
         self.page_strategies.setAlignment(Qt.AlignCenter)
         self.page_backtest = BacktestPage()
         self.page_marketdata = MarketDataPage()
+        self.page_research = ResearchPage()
 
         self.content_stack.addWidget(self.page_dashboard)
         self.content_stack.addWidget(self.page_plugins)
         self.content_stack.addWidget(self.page_strategies)
         self.content_stack.addWidget(self.page_backtest)
         self.content_stack.addWidget(self.page_marketdata)
+        self.content_stack.addWidget(self.page_research)
 
         self.main_body.addWidget(self.content_stack)
 
