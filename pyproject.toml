@@ -12,6 +12,7 @@ dependencies = [
     "grpcio>=1.70.0",
     "httpx[http2]>=0.28.1",
     "numpy>=2.1.0",
+    "openai>=2.30.0",
     "polars>=1.8.2",
     "protobuf>=5.29.6",
     "pyarrow>=17.0.0",

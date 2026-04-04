@@ -2,7 +2,7 @@ import datetime
 import io
 from contextlib import redirect_stderr, redirect_stdout
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QFrame,
@@ -19,9 +19,8 @@ from PySide6.QtWidgets import (
 )
 from qtconsole.inprocess import QtInProcessKernelManager
 
-# ==========================================
-# 样式配置与全局 QSS
-# ==========================================
+from ....llm.llm import LLMCore
+
 COLORS = {
     "bg": "#181210",
     "surface": "#251e1c",
@@ -40,7 +39,6 @@ COLORS = {
 }
 
 GLOBAL_STYLES = f"""
-/* 1. 主工作区与布局 */
 QWidget#MainWorkspace {{ background-color: {COLORS['bg']}; }}
 QSplitter#MainSplitter::handle {{ background-color: #332b29; }}
 QSplitter#MainSplitter::handle:hover {{ background-color: {COLORS['primary']}; }}
@@ -48,7 +46,6 @@ QWidget#ChatPanel {{
     background-color: {COLORS['bg']}; border-left: 1px solid {COLORS['outline']}4D;
 }}
 
-/* 2. 单元格组件 NotebookCell */
 QFrame#NotebookCellFrame {{ background: transparent; border: none; }}
 QLabel[class="CellInLabel"] {{
     color: {COLORS['on_surface_variant']};
@@ -81,7 +78,6 @@ QLabel[class="CellOutput"] {{
     qproperty-alignment: 'AlignLeft | AlignTop';
 }}
 
-/* 3. 悬浮命令条 FloatingCommandBar */
 QFrame#FloatingBar {{
     background-color: {COLORS['surface']};
     border: 1px solid {COLORS['outline']}4D;
@@ -103,7 +99,6 @@ QPushButton[class="FloatingConfirmBtn"] {{
 }}
 QPushButton[class="FloatingConfirmBtn"]:hover {{ background-color: #fce47c; }}
 
-/* 4. 聊天气泡 ChatBubble */
 QLabel[class="UserBubble"] {{
     background-color: {COLORS['primary_container']};
     color: {COLORS['primary']};
@@ -146,11 +141,9 @@ QWidget#NotebookContainer {{
 }}
 """
 
-# ==========================================
-# 1. 单元格组件
-# ==========================================
+
 class NotebookCell(QFrame):
-    def __init__(self, execution_count, parent=None):
+    def __init__(self, execution_count, code=None, parent=None):
         super().__init__(parent)
         self.setObjectName("NotebookCellFrame")
 
@@ -170,6 +163,8 @@ class NotebookCell(QFrame):
         self.code_box.setProperty("class", "CellEditor")
         self.code_box.setPlaceholderText("... waiting for input")
         self.code_box.setFixedHeight(100) # 固定高度
+        if code is not None:
+            self.code_box.setPlainText(code)
 
         input_layout.addWidget(in_label)
         input_layout.addWidget(self.code_box)
@@ -198,6 +193,10 @@ class NotebookCell(QFrame):
         self.code_box.style().unpolish(self.code_box) # 刷新样式
         self.code_box.style().polish(self.code_box)
 
+    def set_codebox(self, code):
+        """"""
+        self.code_box.setPlainText(code)
+
     def set_output(self, text):
         if text.strip():
             # 使用 white-space: pre 保证 ASCII 表格不换行，并设置 Out 标签
@@ -209,9 +208,7 @@ class NotebookCell(QFrame):
             self.output_frame.show()
             QTimer.singleShot(0, self.adjustSize)
 
-# ==========================================
-# 2. 悬浮命令条
-# ==========================================
+
 class FloatingCommandBar(QFrame):
     submitted = Signal(str)
 
@@ -250,13 +247,10 @@ class FloatingCommandBar(QFrame):
 
     def send(self):
         text = self.input.toPlainText().strip()
-        if text:
-            self.submitted.emit(text)
-            self.input.clear()
+        self.submitted.emit(text)
+        self.input.clear()
 
-# ==========================================
-# 3. 聊天气泡
-# ==========================================
+
 class ChatBubble(QWidget):
     def __init__(self, text, is_user=True):
         super().__init__()
@@ -285,9 +279,7 @@ class ChatBubble(QWidget):
             layout.addLayout(v_layout)
             layout.addStretch()
 
-# ==========================================
-# 4. 主工作区
-# ==========================================
+
 class ResearchPage(QWidget):
     def __init__(self):
         super().__init__()
@@ -299,8 +291,18 @@ class ResearchPage(QWidget):
         self.kernel_manager.start_kernel()
         self.kernel = self.kernel_manager.kernel
 
+        self.llm_core = LLMCore()
+        self.llm_core.init()
+        # self.llm_core.init(
+        #     base_url="http://localhost:11434/v1",
+        #     model="qwen3:4b-instruct-2507-q4_K_M",
+        #     api_key="YOUR_API_KEY"
+        # )
+
         self.init_ui()
         self.create_new_cell()
+
+        self.worker = None
 
     def init_ui(self):
         self.setStyleSheet(GLOBAL_STYLES)
@@ -371,35 +373,54 @@ class ResearchPage(QWidget):
         self.floating_bar.move(bar_x, bar_y)
         self.floating_bar.raise_()
 
-    def create_new_cell(self):
-        self.active_cell = NotebookCell(self.execution_count)
+    def create_new_cell(self, code=None):
+        self.active_cell = NotebookCell(self.execution_count, code)
         # 插入到弹簧上方
         self.notebook_layout.insertWidget(self.notebook_layout.count() - 1, self.active_cell)
         self.execution_count += 1
 
     def handle_execution(self, text):
-        self.chat_layout.addWidget(ChatBubble(text, is_user=True))
+        """"""
+        if text:
+            # 如有聊天框有内容，就在右边创建聊天气泡并显示
+            self.chat_layout.addWidget(ChatBubble(text, is_user=True))
 
-        # 获取当前 cell 代码并执行隐藏拼接
-        visible_code = self.active_cell.code_box.toPlainText()
-        full_code = visible_code + "\n" + text
-        output = self.execute_python(full_code)
+        code = self.active_cell.code_box.toPlainText()
+        if code or text:
+            self.worker = WorkflowThread(self.llm_core, code, text, self.execute_python)
+            self.worker.step_started.connect(lambda c: print(c))
+            self.worker.initial_executed.connect(self.show_code_output)
+            self.worker.chunk_received.connect(lambda c: print(c, end="", flush=True))
+            self.worker.chunk_finished.connect(self.show_llm_chat)
+            self.worker.ai_code_analysised.connect(self.add_llm_code)
+            self.worker.finished.connect(lambda c: print(c))
+            self.worker.start()
 
-        self.active_cell.set_output(output)
+    def show_code_output(self, text):
+        self.active_cell.set_output(text)
         self.active_cell.set_readonly(True)
+        self.create_new_cell()
 
+    def show_llm_chat(self, text):
+        """对话框生成辅助对话"""
         self.chat_layout.addWidget(
             ChatBubble(
-                f"Done. Output updated in In [{self.execution_count-1}]is:{output}.",
+                f"[{self.execution_count-1}]:{"\n"}{text}.",
                 is_user=False
             )
         )
-        self.create_new_cell()
 
-        # 自动滚动
-        QTimer.singleShot(50, lambda: self.notebook_scroll.verticalScrollBar().setValue(
-            self.notebook_scroll.verticalScrollBar().maximum()
-        ))
+    def add_llm_code(self, text):
+        """左侧添加有内容的代码框"""
+        if self.active_cell.code_box.toPlainText():
+            self.create_new_cell(text)
+
+            # 自动滚动
+            QTimer.singleShot(50, lambda: self.notebook_scroll.verticalScrollBar().setValue(
+                self.notebook_scroll.verticalScrollBar().maximum()
+            ))
+        else:
+            self.active_cell.set_codebox(text)
 
     def execute_python(self, code):
         f = io.StringIO()
@@ -411,3 +432,56 @@ class ResearchPage(QWidget):
             except Exception as e:
                 print(f"Error: {e}")
         return f.getvalue()
+
+
+class WorkflowThread(QThread):
+    """"""
+    step_started = Signal(str)
+    initial_executed = Signal(str)
+    chunk_received = Signal(str)
+    chunk_finished = Signal(str)
+    ai_code_analysised = Signal(str)
+    finished = Signal(str)
+
+    def __init__(self, core: LLMCore, initial_script, initial_prompt, execute_code):
+        super().__init__()
+        self.core = core
+        self.initial_script = initial_script
+        self.initial_prompt = initial_prompt
+        self.execute_code = execute_code
+
+    def run(self):
+        if self.initial_script:
+            # check if input code
+            self.step_started.emit("running initial script...")
+            initial_output = self.execute_code(self.initial_script)
+            self.initial_executed.emit(initial_output)
+        else:
+            initial_output= ""
+
+        if self.initial_prompt:
+            # check if input prompt
+            self.step_started.emit("request llm analysis...")
+            prompt = f"""
+                我新运行的函数是{self.initial_script}
+                运行的结果是{initial_output}
+                我新的需求是{self.initial_prompt}
+            """
+
+            full_llm_response = ""
+            for chunk in self.core.ask_stream(prompt):
+                full_llm_response += chunk
+                self.chunk_received.emit(chunk) # 实时推送到 UI 气泡
+
+            self.step_started.emit("llm analysis finished")
+            self.chunk_finished.emit(full_llm_response)
+
+            self.step_started.emit("extracting code...")
+            ai_code = self.core.extract_code(full_llm_response)
+
+            if ai_code:
+                self.step_started.emit("code extracted")
+                self.ai_code_analysised.emit(ai_code)
+                self.finished.emit("llm code generation finished")
+            else:
+                self.finished.emit("no llm code generated")

@@ -72,6 +72,16 @@ PLUGINS = {
         "is_new": False,
         "auth_fields": []
     },
+    "Standard LLM Interface": {
+        "name": "standard-llm",
+        "desc": "Universal LLM connector compatible with OpenAI-style APIs,\
+            supporting custom endpoints and model selection.",
+        "category": "robot",
+        "star": "5",
+        "download": "500",
+        "is_new": True,
+        "auth_fields": ["base_url", "model_name", "api_key"]
+    },
     "TimescaleDB Interface": {
         "name": "timescaledb",
         "desc": "High-performance time-series database optimization for\
@@ -240,7 +250,8 @@ class ActivePluginCard(QFrame):
         dialog = PluginConfigDialog(self.title, self.config, self)
         if dialog.exec():
             configuration = dialog.get_configuration()
-            save_config(category="data_source", name="tushare", config=configuration)
+            print(configuration)
+            save_config(category="robot", name="standard-llm", config=configuration)
         else:
             pass
 
@@ -487,6 +498,7 @@ class PluginManagementWidget(QWidget):
 
         active_hbox.addWidget(create_scroll_card("Tushare Interface"))
         active_hbox.addWidget(create_scroll_card("Okx Execution Gateway"))
+        active_hbox.addWidget(create_scroll_card("Standard LLM Interface"))
         active_hbox.addWidget(create_scroll_card("TimescaleDB Interface"))
 
         # 4. 添加弹簧，防止卡片数量少时散开

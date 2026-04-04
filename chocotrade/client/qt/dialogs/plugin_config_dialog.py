@@ -162,7 +162,7 @@ class PluginConfigDialog(QDialog):
 
         for field in self.config["auth_fields"]:
             tmp = QLineEdit("****************")
-            tmp.setEchoMode(QLineEdit.Password)
+            # tmp.setEchoMode(QLineEdit.Password)
             tmp.addAction(
                 QIcon(str(load_source("src", "icons", "visibility.svg"))),
                 QLineEdit.TrailingPosition
