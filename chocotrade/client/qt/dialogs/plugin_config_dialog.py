@@ -36,9 +36,10 @@ COLORS = {
 # 1. 独立弹窗：Plugin Configuration Dialog
 # ==========================================
 class PluginConfigDialog(QDialog):
-    def __init__(self, plugin_name, config, parent=None):
+    def __init__(self, plugin_name, config, current_config, parent=None):
         super().__init__(parent)
         self.config = config
+        self.current_config = current_config
 
         self.setWindowTitle("Plugin Configuration")
         self.setFixedSize(760, 480)
@@ -161,12 +162,26 @@ class PluginConfigDialog(QDialog):
             return vbox
 
         for field in self.config["auth_fields"]:
-            tmp = QLineEdit("****************")
-            # tmp.setEchoMode(QLineEdit.Password)
-            tmp.addAction(
-                QIcon(str(load_source("src", "icons", "visibility.svg"))),
+            # 1. 初始化 QLineEdit，建议不要放 "***"，而是设置模式
+            tmp = QLineEdit()
+            tmp.setEchoMode(QLineEdit.Password) # 默认为隐藏模式
+            # 如果有旧值，可以填入实际值而非星号
+            tmp.setText(self.current_config.get(field, ""))
+
+            # 2. 添加 Action 并获取引用 (保存为 action 变量)
+            # 初始图标建议显示“不可见”状态
+            action = tmp.addAction(
+                QIcon(str(load_source("src", "icons", "visibility_off.svg"))),
                 QLineEdit.TrailingPosition
             )
+
+            # 3. 核心：使用 lambda 锁定当前的 tmp 和 action
+            # 注意：t=tmp, a=action 是为了在循环中捕捉当前迭代的对象
+            action.triggered.connect(
+                lambda checked=False, t=tmp, a=action: self.toggle_password_view(t, a)
+            )
+
+            # 4. 绑定到 self 并添加到布局
             setattr(self, field, tmp)
             left_col.addLayout(create_input_group(field.upper(), getattr(self, field)))
 
@@ -271,8 +286,20 @@ class PluginConfigDialog(QDialog):
 
         main_layout.addLayout(form_layout)
 
+    def toggle_password_view(self, line_edit, action):
+        # 检查当前的模式
+        if line_edit.echoMode() == QLineEdit.Password:
+            # 切换到普通文本模式
+            line_edit.setEchoMode(QLineEdit.Normal)
+            # 切换图标为“可见”
+            action.setIcon(QIcon(str(load_source("src", "icons", "visibility.svg"))))
+        else:
+            # 切换回密码模式
+            line_edit.setEchoMode(QLineEdit.Password)
+            # 切换图标为“不可见”
+            action.setIcon(QIcon(str(load_source("src", "icons", "visibility_off.svg"))))
+
     def get_configuration(self):
         return {
-            # "key": self.inp_key.text()
             field: getattr(self, field).text() for field in self.config["auth_fields"]
         }

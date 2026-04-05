@@ -4,12 +4,12 @@ import logging
 import polars as pl
 import tushare as ts
 
-from ..core.engine import MainEngine
+from ..base.plugin import Plugin
 
 logger = logging.getLogger("tushare")
 
 
-class TushareDataSource:
+class TushareDataSource(Plugin):
     """"""
     _instance = None
     _pro = None
@@ -33,8 +33,7 @@ class TushareDataSource:
 
     def init(self):
         """"""
-        main_engine = MainEngine()
-        self.api_token = main_engine.load_config("data_source", "tushare").get("api_token", None)
+        self.api_token = self.load_config("data_source", "tushare").get("api_token", None)
 
     def update_auth(self):
         """"""

@@ -2,12 +2,13 @@ import re
 
 from openai import OpenAI
 
-from ..core.engine import MainEngine
+from ..base.plugin import Plugin
 
 
-class LLMCore:
+class LLMCore(Plugin):
     """"""
     def __init__(self):
+        super().__init__()
         self.client: OpenAI = None
         self.base_url: str = None
         self.model: str = None
@@ -26,8 +27,7 @@ class LLMCore:
 
     def init(self):
         """"""
-        main_engine = MainEngine()
-        config = main_engine.load_config("robot", "standard-llm")
+        config = self.load_config("robot", "standard-llm")
         base_url = config.get("base_url")
         api_key = config.get("api_key")
         self.model = config.get("model_name")
