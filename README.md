@@ -41,6 +41,10 @@
 - **OpenClaw 集成与 AI 技能库。**
 专为 AI Agent 时代设计。我们为 OpenClaw 提供了完整的 API 接口和专属“技能（Skills）”，实现 AI 智能体与交易引擎的无缝交互，支持自动化分析与智能执行。
 
+<p align="center">
+  <img src="assets/show.gif" width="800" alt="Chocotrade Show">
+</p>
+
 ## 🏗️ 架构
 ```text
       ┌───────────────────────────────────────────────────────────────────────────────┐

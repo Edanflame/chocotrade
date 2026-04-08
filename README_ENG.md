@@ -37,6 +37,10 @@ By utilizing high-performance gRPC for communication, ChocoTrade supports distri
 - ***OpenClaw Integration & AI-Ready Skills.***
 Designed for the era of AI Agents, we provide comprehensive API interfaces and dedicated "Skills" for OpenClaw. This enables seamless interaction between AI agents and the trading engine for automated analysis and intelligent execution.
 
+<p align="center">
+  <img src="assets/show.gif" width="800" alt="Chocotrade Show">
+</p>
+
 ## 🏗️ Architecture
 ```text
       ┌───────────────────────────────────────────────────────────────────────────────┐
