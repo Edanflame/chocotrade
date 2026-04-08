@@ -504,6 +504,26 @@ class DataManagerStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.StartRecord = channel.unary_unary(
+                '/demo.DataManager/StartRecord',
+                request_serializer=service__pb2.Empty.SerializeToString,
+                response_deserializer=service__pb2.Empty.FromString,
+                _registered_method=True)
+        self.StopRecord = channel.unary_unary(
+                '/demo.DataManager/StopRecord',
+                request_serializer=service__pb2.Empty.SerializeToString,
+                response_deserializer=service__pb2.Empty.FromString,
+                _registered_method=True)
+        self.AddRecordSymbol = channel.unary_unary(
+                '/demo.DataManager/AddRecordSymbol',
+                request_serializer=service__pb2.AddRecordSymbolRequest.SerializeToString,
+                response_deserializer=service__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetRecordStreams = channel.unary_unary(
+                '/demo.DataManager/GetRecordStreams',
+                request_serializer=service__pb2.Empty.SerializeToString,
+                response_deserializer=service__pb2.GetRecordStreamListReply.FromString,
+                _registered_method=True)
         self.SyncData = channel.unary_unary(
                 '/demo.DataManager/SyncData',
                 request_serializer=service__pb2.SyncDataRequest.SerializeToString,
@@ -518,6 +538,30 @@ class DataManagerStub(object):
 
 class DataManagerServicer(object):
     """Missing associated documentation comment in .proto file."""
+
+    def StartRecord(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StopRecord(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddRecordSymbol(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetRecordStreams(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def SyncData(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -534,6 +578,26 @@ class DataManagerServicer(object):
 
 def add_DataManagerServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'StartRecord': grpc.unary_unary_rpc_method_handler(
+                    servicer.StartRecord,
+                    request_deserializer=service__pb2.Empty.FromString,
+                    response_serializer=service__pb2.Empty.SerializeToString,
+            ),
+            'StopRecord': grpc.unary_unary_rpc_method_handler(
+                    servicer.StopRecord,
+                    request_deserializer=service__pb2.Empty.FromString,
+                    response_serializer=service__pb2.Empty.SerializeToString,
+            ),
+            'AddRecordSymbol': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddRecordSymbol,
+                    request_deserializer=service__pb2.AddRecordSymbolRequest.FromString,
+                    response_serializer=service__pb2.Empty.SerializeToString,
+            ),
+            'GetRecordStreams': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRecordStreams,
+                    request_deserializer=service__pb2.Empty.FromString,
+                    response_serializer=service__pb2.GetRecordStreamListReply.SerializeToString,
+            ),
             'SyncData': grpc.unary_unary_rpc_method_handler(
                     servicer.SyncData,
                     request_deserializer=service__pb2.SyncDataRequest.FromString,
@@ -554,6 +618,114 @@ def add_DataManagerServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class DataManager(object):
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def StartRecord(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.DataManager/StartRecord',
+            service__pb2.Empty.SerializeToString,
+            service__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StopRecord(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.DataManager/StopRecord',
+            service__pb2.Empty.SerializeToString,
+            service__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AddRecordSymbol(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.DataManager/AddRecordSymbol',
+            service__pb2.AddRecordSymbolRequest.SerializeToString,
+            service__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetRecordStreams(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.DataManager/GetRecordStreams',
+            service__pb2.Empty.SerializeToString,
+            service__pb2.GetRecordStreamListReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def SyncData(request,

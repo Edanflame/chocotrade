@@ -9,6 +9,13 @@ from ..base.plugin import Plugin
 logger = logging.getLogger("tushare")
 
 
+EXCHANGE_MAP = {
+    "SZ": "SZSE",
+    "SH": "SSE",
+    "BJ": "BSE"
+}
+
+
 class TushareDataSource(Plugin):
     """"""
     _instance = None
@@ -39,15 +46,24 @@ class TushareDataSource(Plugin):
         """"""
         ts.set_token(self.api_token)
 
-    def test(self, symbol):
+    def query_bar_history(
+        self,
+        symbol,
+        start_time: str,
+        end_time: str,
+        granularity
+    ):
         if not self.pro:
             return
 
         self.update_auth()
 
+        start_date = start_time.split(" ")[0].replace("-", "")
+        end_date = end_time.split(" ")[0].replace("-", "")
+
         try:
             data = ts.pro_bar(
-                ts_code=symbol, adj='qfq', start_date='20180101', end_date='20261011'
+                ts_code=symbol, adj="qfq", start_date=start_date, end_date=end_date
             )
         except OSError as e:
             logger.info(e)
@@ -64,12 +80,7 @@ class TushareDataSource(Plugin):
             pl.col("vol").cast(pl.Float64).alias("volume")
         ])
         ts_exchange = symbol.split(".")[1]
-        if ts_exchange == "SZ":
-            exchange = "SZSE"
-        elif ts_exchange == "SH":
-            exchange = "SSE"
-        elif ts_exchange == "BJ":
-            exchange = "BSE"
+        exchange = EXCHANGE_MAP.get(ts_exchange, "")
 
         df_to_save = df.with_columns(
             pl.lit(exchange).alias("exchange")

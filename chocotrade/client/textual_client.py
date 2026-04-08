@@ -313,8 +313,20 @@ class TextualClient(App):
 
     def refresh_data(self, data) -> None:
         # 这里写从 API 获取数据的逻辑
-        MOCK_DATA["asks"] = [(float(d[0]), float(d[1])) for d in data[0]["asks"]]
-        MOCK_DATA["bids"] = [(float(d[0]), float(d[1])) for d in data[0]["bids"]]
+        MOCK_DATA["asks"] = [
+            (float(data["ask_price_1"]), float(data["ask_volume_1"])),
+            (float(data["ask_price_2"]), float(data["ask_volume_2"])),
+            (float(data["ask_price_3"]), float(data["ask_volume_3"])),
+            (float(data["ask_price_4"]), float(data["ask_volume_4"])),
+            (float(data["ask_price_5"]), float(data["ask_volume_5"]))
+        ]
+        MOCK_DATA["bids"] = [
+            (float(data["bid_price_1"]), float(data["bid_volume_1"])),
+            (float(data["bid_price_2"]), float(data["bid_volume_2"])),
+            (float(data["bid_price_3"]), float(data["bid_volume_3"])),
+            (float(data["bid_price_4"]), float(data["bid_volume_4"])),
+            (float(data["bid_price_5"]), float(data["bid_volume_5"]))
+        ]
         MOCK_DATA["last_price"] = (MOCK_DATA["asks"][0][0] + MOCK_DATA["bids"][0][0]) / 2
         depth_widget = self.query_one("#my_depth_widget", StockDepth)
         depth_widget.render_table()

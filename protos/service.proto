@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package demo;
 
+message Empty {}
+
 // 定义请求消息
 message HelloRequest {
   string name = 1;
@@ -94,9 +96,6 @@ service GatewayManager {
   rpc SendOrder (SendOrderRequest) returns (SendOrderReply) {}
 }
 
-
-message Empty {}
-
 message EventReply {
   string name = 1;
   string data = 2;
@@ -110,7 +109,12 @@ service EventEngine {
 
 // 数据管理服务
 message SyncDataRequest {
-  string symbol = 1;
+  string interface = 1;
+  string symbol = 2;
+  string start_time = 3;
+  string end_time = 4;
+  string granularity = 5;
+  string storage = 6;
 }
 
 message SyncDataReply {
@@ -127,6 +131,7 @@ message GetOverviewReply {
   uint32 total = 3;
   string start_dt_str = 4;
   string end_dt_str = 5;
+  string type = 6;
 }
 
 message GetOverviewListReply {
@@ -134,7 +139,24 @@ message GetOverviewListReply {
   uint32 total_count = 2;
 }
 
+message AddRecordSymbolRequest {
+  string symbol = 1;
+}
+
+message GetRecordStreamReply {
+  string detail = 1;
+}
+
+message GetRecordStreamListReply {
+  repeated GetRecordStreamReply streams = 1;
+  uint32 count = 2;
+}
+
 service DataManager {
+  rpc StartRecord(Empty) returns (Empty) {}
+  rpc StopRecord(Empty) returns (Empty) {}
+  rpc AddRecordSymbol(AddRecordSymbolRequest) returns (Empty) {}
+  rpc GetRecordStreams(Empty) returns (GetRecordStreamListReply) {}
   rpc SyncData (SyncDataRequest) returns (SyncDataReply) {}
   rpc GetOverview (GetOverviewRequest) returns (GetOverviewListReply) {}
 }

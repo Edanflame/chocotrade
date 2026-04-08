@@ -71,15 +71,72 @@ def send_order(gateway_name="Pythoner", port="50051"):
         return response.order_id
 
 
-def sync_data(gateway_name="Pythoner", port="50051", symbol=""):
+def sync_data(
+        gateway_name="Pythoner",
+        port="50051",
+        interface="",
+        symbol="",
+        start_time="",
+        end_time="",
+        granularity="",
+        storage=""
+    ):
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.DataManagerStub(channel)
-        response = stub.SyncData(service_pb2.SyncDataRequest(symbol=symbol))
+        response = stub.SyncData(service_pb2.SyncDataRequest(
+            interface=interface,
+            symbol=symbol,
+            start_time=start_time,
+            end_time=end_time,
+            granularity=granularity,
+            storage=storage
+        ))
         # logger.info(f"[前端] 收到后端回复: {response.order_id}")
         return response.data_id
 
+def start_record(gateway_name="Pythoner", port="50051"):
+    """"""
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.DataManagerStub(channel)
+        stub.StartRecord(service_pb2.Empty())
+
+
+def stop_record(gateway_name="Pythoner", port="50051"):
+    """"""
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.DataManagerStub(channel)
+        stub.StopRecord(service_pb2.Empty())
+
+
+def add_record_symbol(
+        gateway_name="Pythoner",
+        port="50051",
+        interface="",
+        symbol="",
+        is_day_record="",
+        day_record_start_time="",
+        day_record_end_time="",
+        is_night_record="",
+        night_record_start_time="",
+        night_record_end_time="",
+        storage=""
+    ):
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.DataManagerStub(channel)
+        stub.AddRecordSymbol(service_pb2.AddRecordSymbolRequest(symbol=symbol))
+
+
+def get_streaming_record(gateway_name="Pythoner", port="50051"):
+    """"""
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.DataManagerStub(channel)
+        response = stub.GetRecordStreams(service_pb2.Empty())
+        dicts = [MessageToDict(r, preserving_proto_field_name=True) for r in response.streams]
+        return [stream["detail"].split(",") for stream in dicts]
+
 
 def get_overview(gateway_name="Pythoner", port="50051"):
+    """"""
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.DataManagerStub(channel)
         response = stub.GetOverview(service_pb2.GetOverviewRequest(data_id=""))
@@ -131,7 +188,7 @@ async def listen_to_backend(callbacks, port="50051"):
                 message = BackendEventMessage(event.name, event.data)
                 callbacks[0](f"{message.event_type} 和 {message.event_data}")
                 if message.event_type == "event_tick." and message.event_data != "pong":
-                    data = json.loads(message.event_data).get("data", None)
+                    data = json.loads(message.event_data)
                     if data:
                         callbacks[1](data)
         except grpc.aio.AioRpcError as e:

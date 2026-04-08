@@ -1,3 +1,4 @@
+import json
 import logging
 from concurrent import futures
 from queue import Empty, Queue
@@ -95,8 +96,13 @@ class GatewayManagerServicer(service_pb2_grpc.GatewayManagerServicer):
         gateway_name = "okex_gateway"
         my_module = safe_import_module(gateway_name)
         self._gateway_id = self._engine.add_gateway(my_module.OkexGateway, gateway_name)
+        # self._engine.subscribe(self._gateway_id, "symbol")
         # return service_pb2.GatewayReply(message=f"成功加载模块{gateway_name}")
         return service_pb2.GatewayReply(message=self._gateway_id)
+
+    def Subscribe(self, request, context):
+        """"""
+        self._engine.subscribe(self._gateway_id, "symbol")
 
     def SendOrder(self, request, context):
         """"""
@@ -108,9 +114,10 @@ class GatewayManagerServicer(service_pb2_grpc.GatewayManagerServicer):
 
 class DataManagerServicer(service_pb2_grpc.DataManagerServicer):
     """"""
-    def __init__(self):
+    def __init__(self, engine=main_engine):
         """"""
         super().__init__()
+        self._engine = engine
 
     def add_database(self):
         """"""
@@ -120,12 +127,44 @@ class DataManagerServicer(service_pb2_grpc.DataManagerServicer):
         """"""
         pass
 
-    def FetchData(self, symbol):
+    def StartRecord(self, request, context):
         """"""
-        data = TushareDataSource().test(symbol)
+        self._engine._dms_engine.start_record()
+        return service_pb2.Empty()
+
+    def StopRecord(self, request, context):
+        """"""
+        self._engine._dms_engine.stop_record()
+        return service_pb2.Empty()
+
+    def AddRecordSymbol(self, request, context):
+        """"""
+        symbol = request.symbol
+        self._engine._dms_engine.add_record_symbol(symbol)
+        return service_pb2.Empty()
+
+    def GetRecordStreams(self, request, context):
+        """"""
+        streams = self._engine._dms_engine.get_record_streams()
+        data = {
+            "streams": streams,
+            "count": len(streams)
+        }
+        reply = service_pb2.GetRecordStreamListReply()
+        ParseDict(data, reply)
+        return reply
+
+    def FetchData(self, symbol, start_time, end_time, granularity):
+        """"""
+        data = TushareDataSource().query_bar_history(
+            symbol=symbol,
+            start_time=start_time,
+            end_time=end_time,
+            granularity=granularity
+        )
         return data
 
-    def SaveData(self, data):
+    def SaveData(self, data, symbol, start_time, end_time, granularity, storage):
         """"""
         if data is None:
             return
@@ -135,14 +174,34 @@ class DataManagerServicer(service_pb2_grpc.DataManagerServicer):
 
     def SyncData(self, request, context):
         """"""
-        data = self.FetchData(request.symbol)
-        self.SaveData(data)
+        data = self.FetchData(
+            request.symbol,
+            request.start_time,
+            request.end_time,
+            request.granularity
+        )
+        self.SaveData(
+            data,
+            request.symbol,
+            request.start_time,
+            request.end_time,
+            request.granularity,
+            request.storage
+        )
         return service_pb2.SyncDataReply(data_id="")
 
     def GetOverview(self, request, context):
         """"""
         database = DuckBarsDatabase()
-        overview = database.query_bar_overview_dict()
+        overview_bar = database.query_bar_overview_dict()
+        overview_tick = database.query_tick_overview_dict()
+        overview = []
+        for bar in overview_bar:
+            bar["type"] = "bar"
+            overview.append(bar)
+        for tick in overview_tick:
+            tick["type"] = "tick"
+            overview.append(tick)
         data = {
             "results": overview,
             "total_count": len(overview)
@@ -216,9 +275,14 @@ class EventEngineServicer(service_pb2_grpc.EventEngineServicer):
         # 这个函数会被 Engine 线程调用
         def bridge_callback(e: Event):
             try:
+                if not isinstance(e.event_data, dict):
+                    event_data = e.event_data.to_dict()
+                else:
+                    event_data = e.event_data
+
                 event = service_pb2.EventReply(
                     name=e.event_type.value,
-                    data=str(e.event_data))
+                    data=json.dumps(event_data))
                 # 跨线程安全地推入队列
                 _queue.put(event)
             except Exception as e:

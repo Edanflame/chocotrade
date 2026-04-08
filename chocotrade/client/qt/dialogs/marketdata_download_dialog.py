@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QButtonGroup,
     QCalendarWidget,
+    QCheckBox,
     QComboBox,
     QDateTimeEdit,
     QDialog,
@@ -17,9 +18,12 @@ from PySide6.QtWidgets import (
     QListView,
     QProxyStyle,
     QPushButton,
+    QStackedWidget,
     QStyle,
     QStyledItemDelegate,
+    QTimeEdit,
     QVBoxLayout,
+    QWidget,
 )
 
 from ....utilities import load_source
@@ -186,10 +190,11 @@ class DataAcquisitionDialog(QDialog):
         interface_box.setSpacing(8)
         interface_box.addWidget(self.create_label("DATA INTERFACE"))
         self.combo_interface = QComboBox()
-        self.combo_interface.addItems(
-            ["Binance Professional", "Interactive Brokers TWS",
-             "OKX Exchange API", "Coinbase Prime"]
-        )
+        # self.combo_interface.addItems(
+        #     ["Binance Professional", "Interactive Brokers TWS",
+        #      "OKX Exchange API", "Coinbase Prime"]
+        # )
+        self.combo_interface.addItems(["Tushare", "OKX Exchange API"])
         self.apply_dark_combo_style(self.combo_interface)
         interface_box.addWidget(self.combo_interface)
         form_grid.addLayout(interface_box, 0, 0)
@@ -199,25 +204,57 @@ class DataAcquisitionDialog(QDialog):
         symbol_box.setSpacing(8)
         symbol_box.addWidget(self.create_label("CONTRACT CODE / SYMBOL"))
         self.input_symbol = QLineEdit()
-        self.input_symbol.setPlaceholderText("e.g. BTC/USDT")
+        self.input_symbol.setPlaceholderText("e.g. BTC-USDT, 000001.SZ")
         symbol_box.addWidget(self.input_symbol)
         form_grid.addLayout(symbol_box, 0, 1)
 
-        # [第 2 行，第 1 列] Start Time
+        # 第2列堆栈
+        self.mode_stack = QStackedWidget()
+
+        # history
         start_time_box = QVBoxLayout()
         start_time_box.setSpacing(8)
         start_time_box.addWidget(self.create_label("START TIME (UTC)"))
         self.dt_start = self.create_datetime_edit()
         start_time_box.addWidget(self.dt_start)
-        form_grid.addLayout(start_time_box, 1, 0)
 
-        # [第 2 行，第 2 列] End Time
         end_time_box = QVBoxLayout()
         end_time_box.setSpacing(8)
         end_time_box.addWidget(self.create_label("END TIME (UTC)"))
         self.dt_end = self.create_datetime_edit()
         end_time_box.addWidget(self.dt_end)
-        form_grid.addLayout(end_time_box, 1, 1)
+
+        self.historical_time_container = QWidget()
+        hist_layout = QHBoxLayout(self.historical_time_container)
+        hist_layout.setContentsMargins(0,0,0,0)
+        hist_layout.setSpacing(24)
+        hist_layout.addLayout(start_time_box, 1)
+        hist_layout.addLayout(end_time_box, 1)
+
+        # record
+        day_column = QVBoxLayout()
+        day_column.setSpacing(8)
+        self.day_widget, self.day_check, self.day_start, self.day_end =\
+            self.create_session_row("DAY SESSION")
+        day_column.addWidget(self.day_widget)
+
+        night_column = QVBoxLayout()
+        night_column.setSpacing(8)
+        self.night_widget, self.night_check, self.night_start, self.night_end =\
+            self.create_session_row("NIGHT SESSION")
+        night_column.addWidget(self.night_widget)
+
+        self.live_session_container = QWidget()
+        live_layout = QHBoxLayout(self.live_session_container)
+        live_layout.setContentsMargins(0,0,0,0)
+        live_layout.setSpacing(24)
+        live_layout.addLayout(day_column, 1)
+        live_layout.addLayout(night_column, 1)
+
+        # stack
+        self.mode_stack.addWidget(self.historical_time_container) # Index 0
+        self.mode_stack.addWidget(self.live_session_container)   # Index 1
+        form_grid.addWidget(self.mode_stack, 1, 0, 1, 2)
 
         #[第 3 行，第 1 列] Data Granularity
         freq_box = QVBoxLayout()
@@ -247,10 +284,11 @@ class DataAcquisitionDialog(QDialog):
         storage_box.setSpacing(8)
         storage_box.addWidget(self.create_label("SAVE TO VAULT"))
         self.combo_storage = QComboBox()
-        self.combo_storage.addItems(
-            ["QuestDB Cluster (High-Perf)", "PostgreSQL Timescale",
-             "Local NVMe RAID-0", "S3 Cold Storage"]
-        )
+        # self.combo_storage.addItems(
+        #     ["QuestDB Cluster (High-Perf)", "PostgreSQL Timescale",
+        #      "Local NVMe RAID-0", "S3 Cold Storage"]
+        # )
+        self.combo_storage.addItems(["Duckdb"])
         self.apply_dark_combo_style(self.combo_storage)
         storage_box.addWidget(self.combo_storage)
         form_grid.addLayout(storage_box, 2, 1)
@@ -263,21 +301,23 @@ class DataAcquisitionDialog(QDialog):
         footer_layout = QVBoxLayout()
         footer_layout.setSpacing(12)
 
-        start_btn = QPushButton("Start Download")
-        start_btn.setIcon(
+        self.start_btn = QPushButton("Start Download")
+        self.start_btn.setIcon(
             QIcon(str(load_source("src", "icons", "download_dark.svg"))).pixmap(QSize(30, 30))
         )
-        start_btn.setObjectName("startButton")
-        start_btn.clicked.connect(self.accept)
+        self.start_btn.setObjectName("startButton")
+        self.start_btn.clicked.connect(self.accept)
 
         cancel_btn = QPushButton("Cancel Acquisition")
         cancel_btn.setObjectName("cancelButton")
         cancel_btn.clicked.connect(self.reject)
 
-        footer_layout.addWidget(start_btn)
+        footer_layout.addWidget(self.start_btn)
         footer_layout.addWidget(cancel_btn)
 
         main_layout.addLayout(footer_layout)
+
+        self.mode_group.buttonClicked.connect(self.toggle_mode)
 
     def create_label(self, text):
         label = QLabel(text)
@@ -294,6 +334,45 @@ class DataAcquisitionDialog(QDialog):
         dt_edit.setCalendarWidget(calendar)
         return dt_edit
 
+    def create_session_row(self, label_text):
+        """创建一个包含标题和 [时间 TO 时间] 的容器"""
+        container = QWidget()
+        layout = QVBoxLayout(container) # 这里用垂直，上面是勾选框，下面是时间
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        # 1. 标题勾选框 (复用你 create_label 的样式感)
+        checkbox = QCheckBox(label_text)
+        checkbox.setStyleSheet("""
+            color: #d5c5a8; font-family: 'Inter'; font-weight: bold;
+            font-size: 11px; letter-spacing: 1px;
+        """)
+        checkbox.setChecked(False)
+
+        # 2. 时间选择行
+        time_input_layout = QHBoxLayout()
+        time_input_layout.setSpacing(8)
+
+        start_time = QTimeEdit()
+        start_time.setDisplayFormat("HH:mm")
+        # apply_dark_time_style(start_time) # 应用你的时间框样式
+
+        to_label = QLabel("TO")
+        to_label.setStyleSheet("color: #4f453f; font-weight: bold; font-size: 10px;")
+
+        end_time = QTimeEdit()
+        end_time.setDisplayFormat("HH:mm")
+        # apply_dark_time_style(end_time)
+
+        time_input_layout.addWidget(start_time, 1)
+        time_input_layout.addWidget(to_label, 0)
+        time_input_layout.addWidget(end_time, 1)
+
+        layout.addWidget(checkbox)
+        layout.addLayout(time_input_layout)
+
+        return container, checkbox, start_time, end_time
+
     def apply_dark_combo_style(self, combo_box: QComboBox):
         combo_box.setStyle(DarkComboStyle())
         view = QListView()
@@ -305,6 +384,14 @@ class DataAcquisitionDialog(QDialog):
         container.setAttribute(Qt.WA_StyledBackground)
         container.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 
+    def toggle_mode(self, button):
+        if "Historical" in button.text():
+            self.mode_stack.setCurrentIndex(0) # 历史模式
+            self.start_btn.setText("Start Download")
+        else:
+            self.mode_stack.setCurrentIndex(1) # 实时模式
+            self.start_btn.setText("Start Record")
+
     def get_configuration(self):
         mode_btn = self.mode_group.checkedButton()
         freq_btn = self.freq_group.checkedButton()
@@ -315,7 +402,13 @@ class DataAcquisitionDialog(QDialog):
             "start_time": self.dt_start.dateTime().toPython(),
             "end_time": self.dt_end.dateTime().toPython(),
             "granularity": freq_btn.text() if freq_btn else "Unknown",
-            "storage": self.combo_storage.currentText()
+            "storage": self.combo_storage.currentText(),
+            "is_day_record": self.day_check.isChecked(),
+            "day_record_start_time": self.day_start.time().toPython(),
+            "day_record_end_time": self.day_end.time().toPython(),
+            "is_night_record": self.night_check.isChecked(),
+            "night_record_start_time": self.night_start.time().toPython(),
+            "night_record_end_time": self.night_end.time().toPython()
         }
 
     def apply_stylesheet(self):

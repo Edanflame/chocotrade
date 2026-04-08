@@ -2,7 +2,9 @@
 from threading import Lock
 
 from ..base.gateway import BaseGateway
+from ..data_record.data_record import RecorderEngine
 from ..database.sqlite_database import SqliteBoxDatabase
+from .datatype import Exchange, SubscribeRequest
 from .event import Event, EventEngine, EventType, Handler
 
 
@@ -16,6 +18,7 @@ class MainEngine:
     _gms_engine = None
     _oms_engine = None
     _ems_engine = None
+    _dms_engine = None
     _cms_engine = None
 
     def __init__(self) -> None:
@@ -32,6 +35,7 @@ class MainEngine:
                 instance._gms_engine = GmsEngine(main_controller=instance)
                 instance._oms_engine = OmsEngine(main_controller=instance)
                 instance._ems_engine = EmsEngine(main_controller=instance)
+                instance._dms_engine = DmsEngine(main_controller=instance)
                 instance._cms_engine = CmsEngine(main_controller=instance)
 
                 cls._instance = instance
@@ -56,6 +60,18 @@ class MainEngine:
         self._oms_engine.add_gateway(gateway)
         self._ems_engine.add_gateway(gateway)
         return gateway
+
+    def get_gateway(self):
+        """"""
+        return self._gms_engine.get_gateway()
+
+    def subscribe(
+        self,
+        gateway_id,
+        symbol
+    ) -> None:
+        """"""
+        self._gms_engine.subscribe(gateway_id, symbol)
 
     def save_config(self, category, name, config: dict) -> None:
         """"""
@@ -121,9 +137,30 @@ class GmsEngine:
     ) -> str:
         """添加交易网关"""
         gateway = gateway_class(self.main._event_engine, gateway_name)
-        gateway.connect({})
         self._gateways[gateway.gateway_id] = gateway
         return gateway.gateway_id
+
+    def get_gateway(self):
+        """"""
+        for key, _ in self._gateways.items():
+            return key
+
+    def subscribe(
+        self,
+        gateway_id,
+        symbol
+    ) -> None:
+        """"""
+        gateway: BaseGateway | None = self._gateways.get(gateway_id, None)
+        if gateway:
+            gateway.connect({})
+            sub_request = SubscribeRequest(
+                symbol=symbol,
+                exchange=Exchange.GLOBAL
+            )
+            return gateway.subscribe(sub_request)
+        else:
+            return ""
 
     def send_order(
         self,
@@ -172,6 +209,34 @@ class EmsEngine:
     def stop(self):
         """"""
         pass
+
+
+class DmsEngine:
+    """
+    Data Management System Engine
+    """
+    def __init__(self, main_controller, engine_name: str = "dms") -> None:
+        """"""
+        self.main = main_controller
+        self.recorder = RecorderEngine(self.main)
+
+    def start_record(self):
+        """"""
+        self.recorder.start()
+
+    def stop_record(self):
+        """"""
+        self.recorder.stop()
+
+    def add_record_symbol(self, symbol):
+        """"""
+        gateway_id = self.main.get_gateway()
+        self.main.subscribe(gateway_id, symbol)
+        self.recorder.add_record_symbol(symbol)
+
+    def get_record_streams(self):
+        """"""
+        return self.recorder.get_record_streams()
 
 
 class CmsEngine:

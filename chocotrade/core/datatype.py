@@ -28,7 +28,7 @@ class TickData(BaseData):
 
     symbol: str
     exchange: Exchange
-    datetime: datetime
+    timestamp: datetime
 
     name: str = ""
     volume: float = 0
@@ -73,6 +73,48 @@ class TickData(BaseData):
     def __post_init__(self) -> None:
         """"""
         self.ct_symbol: str = f"{self.symbol}.{self.exchange.value}"
+
+    def to_dict(self):
+        """"""
+        return {
+            "symbol": self.symbol,
+            "exchange": self.exchange.value,
+            "timestamp": self.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
+            "name": self.name,
+            "volume": self.volume,
+            "turnover": self.turnover,
+            "open_interest": self.open_interest,
+            "last_price": self.last_price,
+            "last_volume": self.last_volume,
+            "limit_up": self.limit_up,
+            "limit_down": self.limit_down,
+            "open_price": self.open_price,
+            "high_price": self.high_price,
+            "low_price": self.low_price,
+            "pre_close": self.pre_close,
+            "bid_price_1": self.bid_price_1,
+            "bid_price_2": self.bid_price_2,
+            "bid_price_3": self.bid_price_3,
+            "bid_price_4": self.bid_price_4,
+            "bid_price_5": self.bid_price_5,
+            "ask_price_1": self.ask_price_1,
+            "ask_price_2": self.ask_price_2,
+            "ask_price_3": self.ask_price_3,
+            "ask_price_4": self.ask_price_4,
+            "ask_price_5": self.ask_price_5,
+            "bid_volume_1": self.bid_volume_1,
+            "bid_volume_2": self.bid_volume_2,
+            "bid_volume_3": self.bid_volume_3,
+            "bid_volume_4": self.bid_volume_4,
+            "bid_volume_5": self.bid_volume_5,
+            "ask_volume_1": self.ask_volume_1,
+            "ask_volume_2": self.ask_volume_2,
+            "ask_volume_3": self.ask_volume_3,
+            "ask_volume_4": self.ask_volume_4,
+            "ask_volume_5": self.ask_volume_5,
+            "ct_symbol": self.ct_symbol,
+            "gateway_name": self.gateway_name
+        }
 
 
 @dataclass(slots=True)

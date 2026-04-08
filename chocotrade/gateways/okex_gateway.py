@@ -13,7 +13,7 @@ from ..base.gateway import BaseGateway
 from ..base.restapi import BaseRestClient
 from ..base.websocket import BaseWebSocketClient
 from ..core.constant import Direction, Exchange, OrderType
-from ..core.datatype import CancelRequest, OrderData, OrderRequest, SubscribeRequest
+from ..core.datatype import CancelRequest, OrderData, OrderRequest, SubscribeRequest, TickData
 
 PUBLIC_HOST: str = "wss://ws.okx.com:8443/ws/v5/public"
 
@@ -72,10 +72,9 @@ class OkexGateway(BaseGateway):
         self.public_ws.wait_until_connected()
         self.private_ws.wait_until_connected()
 
-        self.private_ws.login()
+        # self.private_ws.login()
 
         self.start_timer(20)
-        self.subscribe("")
 
     def close(self) -> None:
         """"""
@@ -83,7 +82,7 @@ class OkexGateway(BaseGateway):
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        self.public_ws.subscribe()
+        self.public_ws.subscribe(req)
 
     def query_account(self) -> None:
         """"""
@@ -162,9 +161,10 @@ class PublicWebsocket(OkexWebSocketClient):
         self.init(self.public_wss)
         self.start()
 
-    def subscribe(self):
+    def subscribe(self, req: SubscribeRequest):
         """"""
-        symbol: str = "BTC-USDT"
+        # symbol: str = "BTC-USDT"
+        symbol = req.symbol
 
         packet: dict = {
             "op": "subscribe",
@@ -179,8 +179,49 @@ class PublicWebsocket(OkexWebSocketClient):
 
     def on_message(self, msg):
         """"""
+        if msg == "pong":
+            return
+
+        data = json.loads(msg)
+        if data.get("event", "") == "subscribe":
+            return
+
         # logger.info(f"okex网关：{msg}")
-        self.gateway.on_tick(msg)
+
+        data = data["data"][0]
+
+        tick = TickData(
+            symbol=data["instId"],
+            exchange=Exchange.GLOBAL,
+            timestamp=datetime.fromtimestamp(float(data["ts"]) /1000),
+
+            bid_price_1=data["bids"][0][0],
+            bid_price_2=data["bids"][1][0],
+            bid_price_3=data["bids"][2][0],
+            bid_price_4=data["bids"][3][0],
+            bid_price_5=data["bids"][4][0],
+
+            ask_price_1=data["asks"][0][0],
+            ask_price_2=data["asks"][1][0],
+            ask_price_3=data["asks"][2][0],
+            ask_price_4=data["asks"][3][0],
+            ask_price_5=data["asks"][4][0],
+
+            bid_volume_1=data["bids"][0][1],
+            bid_volume_2=data["bids"][1][1],
+            bid_volume_3=data["bids"][2][1],
+            bid_volume_4=data["bids"][3][1],
+            bid_volume_5=data["bids"][4][1],
+
+            ask_volume_1=data["asks"][0][1],
+            ask_volume_2=data["asks"][0][1],
+            ask_volume_3=data["asks"][0][1],
+            ask_volume_4=data["asks"][0][1],
+            ask_volume_5=data["asks"][0][1],
+
+            gateway_name="okx"
+        )
+        self.gateway.on_tick(tick)
 
 
 class PrivateWebsocket(OkexWebSocketClient):
