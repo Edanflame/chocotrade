@@ -1,12 +1,27 @@
 import re
 
 from openai import OpenAI
+from pydantic_settings import SettingsConfigDict
 
-from ..base.plugin import Plugin
+from ..base.plugin import CHOCO_ENV_FILE, BasePlugin, BaseSettings
 
 
-class LLMCore(Plugin):
+class LLMConfig(BaseSettings):
+    base_url: str = ""
+    model_name: str = ""
+    api_key: str = ""
+
+    model_config = SettingsConfigDict(
+        env_file=CHOCO_ENV_FILE,
+        env_prefix="LLM_",
+        extra="ignore"
+    )
+
+
+class LLMCore(BasePlugin[LLMConfig]):
     """"""
+    config_class = LLMConfig
+
     def __init__(self):
         super().__init__()
         self.client: OpenAI = None
@@ -27,10 +42,9 @@ class LLMCore(Plugin):
 
     def init(self):
         """"""
-        config = self.load_config("robot", "standard-llm")
-        base_url = config.get("base_url")
-        api_key = config.get("api_key")
-        self.model = config.get("model_name")
+        base_url = self.config.base_url
+        api_key = self.config.api_key
+        self.model = self.config.model_name
         # self.client = OpenAI(api_key=api_key, base_url=base_url)
         try:
             self.client = OpenAI(api_key=api_key, base_url=base_url)
@@ -87,3 +101,7 @@ class LLMCore(Plugin):
     def clear(self):
         """清空对话历史"""
         self.history = [self.history[0]]
+
+    def start(self):
+        """"""
+        print("llm")

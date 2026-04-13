@@ -6,6 +6,7 @@ from ..data_record.data_record import RecorderEngine
 from ..database.sqlite_database import SqliteBoxDatabase
 from .datatype import Exchange, SubscribeRequest
 from .event import Event, EventEngine, EventType, Handler
+from .plugin_manager import PluginManager
 
 
 class MainEngine:
@@ -23,7 +24,7 @@ class MainEngine:
 
     def __init__(self) -> None:
         """"""
-        pass
+        self.plugin_manager = PluginManager()
 
     def __new__(cls):
         """Singleton Pattern"""
@@ -72,6 +73,10 @@ class MainEngine:
     ) -> None:
         """"""
         self._gms_engine.subscribe(gateway_id, symbol)
+
+    def add_plugin(self, plugin_name, plugin):
+        """"""
+        self._cms_engine.add_plugin(plugin_name, plugin)
 
     def save_config(self, category, name, config: dict) -> None:
         """"""
@@ -251,11 +256,8 @@ class CmsEngine:
 
     def save_config(self, category, name, config: dict) -> None:
         """"""
-        for key, value in config.items():
-            self.config_database.save(category, name, key, value)
+        self.main.plugin_manager.save_config(name, config)
 
     def load_config(self, category, name) -> dict:
         """"""
-        config = self.config_database.load(category, name)
-        return config
-
+        return self.main.plugin_manager.load_config(name)

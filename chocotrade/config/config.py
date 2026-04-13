@@ -38,6 +38,11 @@ class Settings(BaseSettings):
         """"""
         return str(self.base_dir / self.default_bars_database)
 
+    @property
+    def env_path(self) -> str:
+        """"""
+        return str(self.base_dir / ".env")
+
 
 settings = Settings()
 

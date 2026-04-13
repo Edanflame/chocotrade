@@ -3,8 +3,9 @@ import logging
 
 import polars as pl
 import tushare as ts
+from pydantic_settings import SettingsConfigDict
 
-from ..base.plugin import Plugin
+from ..base.plugin import CHOCO_ENV_FILE, BasePlugin, BaseSettings
 
 logger = logging.getLogger("tushare")
 
@@ -16,8 +17,20 @@ EXCHANGE_MAP = {
 }
 
 
-class TushareDataSource(Plugin):
+class TushareConfig(BaseSettings):
+    token: str
+
+    model_config = SettingsConfigDict(
+        env_file=CHOCO_ENV_FILE,
+        env_prefix="TUSHARE_",
+        extra="ignore"
+    )
+
+
+class TushareDataSource(BasePlugin[TushareConfig]):
     """"""
+    config_class = TushareConfig
+
     _instance = None
     _pro = None
 
@@ -29,22 +42,22 @@ class TushareDataSource(Plugin):
     def __init__(self):
         """"""
         super().__init__()
-        self.init()
+        self.start()
 
     @property
     def pro(self):
         if self._pro is None:
-            ts.set_token(self.api_token)
+            ts.set_token(self.token)
             self._pro = ts.pro_api()
         return self._pro
 
-    def init(self):
+    def start(self):
         """"""
-        self.api_token = self.load_config("data_source", "tushare").get("api_token", None)
+        self.token = self.config.token
 
     def update_auth(self):
         """"""
-        ts.set_token(self.api_token)
+        ts.set_token(self.token)
 
     def query_bar_history(
         self,

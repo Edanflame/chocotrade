@@ -11,7 +11,6 @@ from ..config import settings
 from ..core.engine import MainEngine
 from ..core.event import Event
 from ..database.duckdb_database import DuckBarsDatabase
-from ..datasource.tushare_datasource import TushareDataSource
 from ..protos_generated import service_pb2, service_pb2_grpc
 from ..utilities import safe_import_module
 
@@ -94,7 +93,7 @@ class GatewayManagerServicer(service_pb2_grpc.GatewayManagerServicer):
     def AddGateway(self, request, context):
         """"""
         gateway_name = "okex_gateway"
-        my_module = safe_import_module(gateway_name)
+        my_module = safe_import_module("plugins", gateway_name)
         self._gateway_id = self._engine.add_gateway(my_module.OkexGateway, gateway_name)
         # self._engine.subscribe(self._gateway_id, "symbol")
         # return service_pb2.GatewayReply(message=f"成功加载模块{gateway_name}")
@@ -156,7 +155,7 @@ class DataManagerServicer(service_pb2_grpc.DataManagerServicer):
 
     def FetchData(self, symbol, start_time, end_time, granularity):
         """"""
-        data = TushareDataSource().query_bar_history(
+        data = self._engine.plugin_manager.get_datasource().query_bar_history(
             symbol=symbol,
             start_time=start_time,
             end_time=end_time,

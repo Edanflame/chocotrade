@@ -6,13 +6,12 @@ from importlib import resources
 from .config import settings
 
 
-def safe_import_module(module_name):
+def safe_import_module(module_type, module_name):
     """"""
     if module_name in sys.modules:
         return sys.modules[module_name]
 
-    # pkg_relative_path = f".plugins.{module_name}"
-    pkg_relative_path = f".gateways.{module_name}"
+    pkg_relative_path = f".{module_type}.{module_name}"
 
     parent_package = __name__.rpartition('.')[0]
     return importlib.import_module(pkg_relative_path, package=parent_package)

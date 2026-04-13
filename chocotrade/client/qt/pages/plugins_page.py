@@ -57,10 +57,10 @@ SCROLLBAR_STYLE = f"""
 # 已激活插件卡片组件
 class ActivePluginCard(QFrame):
     # def __init__(self, config, title, desc, icon_name, is_active=True, parent=None):
-    def __init__(self, title, config, parent=None):
+    def __init__(self, config, parent=None):
         super().__init__(parent)
         self.config = config
-        self.title = title
+        self.title = config["title"]
         desc = config["desc"]
         icon_name = config["category"]
         is_active = True
@@ -118,7 +118,7 @@ class ActivePluginCard(QFrame):
         header.addWidget(status_lbl, alignment=Qt.AlignTop)
 
         # 文本
-        title_lbl = QLabel(title)
+        title_lbl = QLabel(self.title)
         title_lbl.setStyleSheet(f"""
             font-size: 18px; font-weight: bold; color: {COLORS['on_surface']};
             font-family: 'Manrope', sans-serif; margin-top: 10px;
@@ -168,12 +168,13 @@ class ActivePluginCard(QFrame):
         layout.addLayout(btn_layout)
 
     def open_config(self):
-        current_config = load_config(category=self.config["category"], name=self.config["name"])
-        tmp = {}
-        for i in current_config:
-            tmp[i["key"]] = i["value"]
+        loaded_config = load_config(category=self.config["category"], name=self.config["name"])
+        current_config = {}
 
-        dialog = PluginConfigDialog(self.title, self.config, tmp, self)
+        for i in loaded_config:
+            current_config[i["key"]] = i.get("value", "")
+
+        dialog = PluginConfigDialog(self.title, self.config, current_config, self)
         if dialog.exec():
             configuration = dialog.get_configuration()
             save_config(
@@ -421,14 +422,14 @@ class PluginManagementWidget(QWidget):
         def create_scroll_card(title):
             plugin = PLUGINS[title]
             # card = ActivePluginCard(title, plugin["desc"], plugin["category"])
-            card = ActivePluginCard(title, plugin)
+            card = ActivePluginCard(plugin)
             card.setFixedWidth(400)  # 设置一个合适的固定宽度
             return card
 
-        active_hbox.addWidget(create_scroll_card("Tushare Interface"))
-        active_hbox.addWidget(create_scroll_card("Okx Execution Gateway"))
-        active_hbox.addWidget(create_scroll_card("Standard LLM Interface"))
-        active_hbox.addWidget(create_scroll_card("TimescaleDB Interface"))
+        active_hbox.addWidget(create_scroll_card("tushare"))
+        active_hbox.addWidget(create_scroll_card("okx"))
+        active_hbox.addWidget(create_scroll_card("standard-llm"))
+        active_hbox.addWidget(create_scroll_card("timescaledb"))
 
         # 4. 添加弹簧，防止卡片数量少时散开
         active_hbox.addStretch()
@@ -452,18 +453,19 @@ class PluginManagementWidget(QWidget):
 
         # 传入的第三个参数对应 src/icons/xxx.svg 的文件名
         avail_plugins = [
-            "Redis Latency Buffer",
-            "AWS S3 Cold Storage",
-            "Vault Sentinel Bot",
-            "Polygon.io Stream"
+            "redis",
+            "aws_s3",
+            "sentinel_bot",
+            "polygon"
         ]
 
-        for i, title in enumerate(avail_plugins):
-            desc = PLUGINS[title]["desc"]
-            category = PLUGINS[title]["category"]
-            star = PLUGINS[title]["star"]
-            download = PLUGINS[title]["download"]
-            is_new = PLUGINS[title]["is_new"]
+        for i, plugin in enumerate(avail_plugins):
+            title = PLUGINS[plugin]["title"]
+            desc = PLUGINS[plugin]["desc"]
+            category = PLUGINS[plugin]["category"]
+            star = PLUGINS[plugin]["star"]
+            download = PLUGINS[plugin]["download"]
+            is_new = PLUGINS[plugin]["is_new"]
             avail_grid.addWidget(
                 AvailablePluginCard(title, desc, category, star, download, is_new), i // 2, i % 2
             )
