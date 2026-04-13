@@ -258,6 +258,49 @@ class ConfigureManagerServicer(service_pb2_grpc.ConfigureManagerServicer):
             field_count=len(field_list)
         )
 
+class IpythonKernelManagerServicer(service_pb2_grpc.IpythonKernelManagerServicer):
+    """"""
+    def __init__(self):
+        """"""
+        from ..ipython import IPythonEngine
+        self.engine = IPythonEngine()
+
+    def ExecuteCode(self, request, context):
+        """"""
+        # 调用 Engine
+        blocks = self.engine.run(request.code)
+
+        # 将 Engine 的数据模型映射为 gRPC Response 对象
+        for block in blocks:
+            yield service_pb2.ExecuteReply(
+                text_output=block.content,
+                data_content=block.binary_data if block.binary_data else b"",
+                msg_type=block.msg_type,
+                mime_type=block.mime_type
+            )
+
+
+class LLMManagerServicer(service_pb2_grpc.LLMManagerServicer):
+    """"""
+    def __init__(self):
+        from ..llm.llm import LLMCore
+        self.llm_core = LLMCore()
+        self.llm_core.init()
+
+    def AskStream(self, request, context):
+        """"""
+        answers = self.llm_core.ask_stream(request.msg)
+
+        for answer in answers:
+            yield service_pb2.LLMReply(
+                msg = answer
+            )
+
+    def ExtractCode(self, request, context):
+        """"""
+        code = self.llm_core.extract_code(request.msg)
+        return service_pb2.LLMReply(msg=code)
+
 
 class EventEngineServicer(service_pb2_grpc.EventEngineServicer):
     """gRPC 接口层"""
@@ -323,6 +366,10 @@ def get_server(port="50051"):
     service_pb2_grpc.add_GatewayManagerServicer_to_server(GatewayManagerServicer(), server)
     service_pb2_grpc.add_DataManagerServicer_to_server(DataManagerServicer(), server)
     service_pb2_grpc.add_ConfigureManagerServicer_to_server(ConfigureManagerServicer(), server)
+    service_pb2_grpc.add_IpythonKernelManagerServicer_to_server(
+        IpythonKernelManagerServicer(), server
+    )
+    service_pb2_grpc.add_LLMManagerServicer_to_server(LLMManagerServicer(), server)
     service_pb2_grpc.add_EventEngineServicer_to_server(EventEngineServicer(), server)
     server.add_insecure_port(f'[::]:{port}')
     return server

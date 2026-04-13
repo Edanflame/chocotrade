@@ -895,3 +895,190 @@ class ConfigureManager(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class IpythonKernelManagerStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.ExecuteCode = channel.unary_stream(
+                '/demo.IpythonKernelManager/ExecuteCode',
+                request_serializer=service__pb2.ExecuteRequest.SerializeToString,
+                response_deserializer=service__pb2.ExecuteReply.FromString,
+                _registered_method=True)
+
+
+class IpythonKernelManagerServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def ExecuteCode(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_IpythonKernelManagerServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'ExecuteCode': grpc.unary_stream_rpc_method_handler(
+                    servicer.ExecuteCode,
+                    request_deserializer=service__pb2.ExecuteRequest.FromString,
+                    response_serializer=service__pb2.ExecuteReply.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'demo.IpythonKernelManager', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('demo.IpythonKernelManager', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class IpythonKernelManager(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def ExecuteCode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/demo.IpythonKernelManager/ExecuteCode',
+            service__pb2.ExecuteRequest.SerializeToString,
+            service__pb2.ExecuteReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class LLMManagerStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.AskStream = channel.unary_stream(
+                '/demo.LLMManager/AskStream',
+                request_serializer=service__pb2.LLMRequest.SerializeToString,
+                response_deserializer=service__pb2.LLMRequest.FromString,
+                _registered_method=True)
+        self.ExtractCode = channel.unary_unary(
+                '/demo.LLMManager/ExtractCode',
+                request_serializer=service__pb2.LLMRequest.SerializeToString,
+                response_deserializer=service__pb2.LLMReply.FromString,
+                _registered_method=True)
+
+
+class LLMManagerServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def AskStream(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ExtractCode(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_LLMManagerServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'AskStream': grpc.unary_stream_rpc_method_handler(
+                    servicer.AskStream,
+                    request_deserializer=service__pb2.LLMRequest.FromString,
+                    response_serializer=service__pb2.LLMRequest.SerializeToString,
+            ),
+            'ExtractCode': grpc.unary_unary_rpc_method_handler(
+                    servicer.ExtractCode,
+                    request_deserializer=service__pb2.LLMRequest.FromString,
+                    response_serializer=service__pb2.LLMReply.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'demo.LLMManager', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('demo.LLMManager', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class LLMManager(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def AskStream(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/demo.LLMManager/AskStream',
+            service__pb2.LLMRequest.SerializeToString,
+            service__pb2.LLMRequest.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ExtractCode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/demo.LLMManager/ExtractCode',
+            service__pb2.LLMRequest.SerializeToString,
+            service__pb2.LLMReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

@@ -1,6 +1,4 @@
 import datetime
-import io
-from contextlib import redirect_stderr, redirect_stdout
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor
@@ -17,9 +15,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qtconsole.inprocess import QtInProcessKernelManager
 
-from ....llm.llm import LLMCore
+from ...client import ask_stream, extract_code, run_code
 
 COLORS = {
     "bg": "#181210",
@@ -287,18 +284,6 @@ class ResearchPage(QWidget):
         self.resize(1300, 900)
         self.execution_count = 1
 
-        self.kernel_manager = QtInProcessKernelManager()
-        self.kernel_manager.start_kernel()
-        self.kernel = self.kernel_manager.kernel
-
-        self.llm_core = LLMCore()
-        self.llm_core.init()
-        # self.llm_core.init(
-        #     base_url="http://localhost:11434/v1",
-        #     model="qwen3:4b-instruct-2507-q4_K_M",
-        #     api_key="YOUR_API_KEY"
-        # )
-
         self.init_ui()
         self.create_new_cell()
 
@@ -387,7 +372,7 @@ class ResearchPage(QWidget):
 
         code = self.active_cell.code_box.toPlainText()
         if code or text:
-            self.worker = WorkflowThread(self.llm_core, code, text, self.execute_python)
+            self.worker = WorkflowThread(code, text, self.execute_python)
             self.worker.step_started.connect(lambda c: print(c))
             self.worker.initial_executed.connect(self.show_code_output)
             self.worker.chunk_received.connect(lambda c: print(c, end="", flush=True))
@@ -423,15 +408,9 @@ class ResearchPage(QWidget):
             self.active_cell.set_codebox(text)
 
     def execute_python(self, code):
-        f = io.StringIO()
-        with redirect_stdout(f), redirect_stderr(f):
-            try:
-                res = self.kernel.shell.run_cell(code)
-                if res.result is not None:
-                    print(res.result)
-            except Exception as e:
-                print(f"Error: {e}")
-        return f.getvalue()
+        for r in run_code(code):
+            if r["msg_type"] == "stdout":
+                yield r["text_output"]
 
 
 class WorkflowThread(QThread):
@@ -443,9 +422,8 @@ class WorkflowThread(QThread):
     ai_code_analysised = Signal(str)
     finished = Signal(str)
 
-    def __init__(self, core: LLMCore, initial_script, initial_prompt, execute_code):
+    def __init__(self, initial_script, initial_prompt, execute_code):
         super().__init__()
-        self.core = core
         self.initial_script = initial_script
         self.initial_prompt = initial_prompt
         self.execute_code = execute_code
@@ -454,8 +432,8 @@ class WorkflowThread(QThread):
         if self.initial_script:
             # check if input code
             self.step_started.emit("running initial script...")
-            initial_output = self.execute_code(self.initial_script)
-            self.initial_executed.emit(initial_output)
+            for initial_output in self.execute_code(self.initial_script):
+                self.initial_executed.emit(initial_output)
         else:
             initial_output= ""
 
@@ -469,7 +447,7 @@ class WorkflowThread(QThread):
             """
 
             full_llm_response = ""
-            for chunk in self.core.ask_stream(prompt):
+            for chunk in ask_stream(prompt):
                 full_llm_response += chunk
                 self.chunk_received.emit(chunk) # 实时推送到 UI 气泡
 
@@ -477,7 +455,7 @@ class WorkflowThread(QThread):
             self.chunk_finished.emit(full_llm_response)
 
             self.step_started.emit("extracting code...")
-            ai_code = self.core.extract_code(full_llm_response)
+            ai_code = extract_code(full_llm_response)
 
             if ai_code:
                 self.step_started.emit("code extracted")

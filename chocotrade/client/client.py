@@ -175,6 +175,43 @@ def load_config(gateway_name="Pythoner", port="50051", category="", name=""):
         return dicts
 
 
+def run_code(code, gateway_name="Pythoner", port="50051"):
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.IpythonKernelManagerStub(channel)
+        responses = stub.ExecuteCode(service_pb2.ExecuteRequest(code=code))
+        for r in responses:
+            if r.mime_type == "text/plain":
+                yield {"mime_type": r.mime_type,
+                       "msg_type": r.msg_type,
+                       "text_output": r.text_output
+                      }
+            elif r.mime_type == "image/png":
+                yield {"mime_type": r.mime_type,
+                       "msg_type": r.msg_type,
+                       "binary_data": r.data_content
+                      }
+            elif r.mime_type == "text/html":
+                yield {"mime_type": r.mime_type,
+                       "msg_type": r.msg_type,
+                       "data_content": r.data_content
+                      }
+
+
+def ask_stream(msg, gateway_name="Pythoner", port="50051"):
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.LLMManagerStub(channel)
+        responses = stub.AskStream(service_pb2.LLMRequest(msg=msg))
+        for r in responses:
+            yield r.msg
+
+
+def extract_code(msg, gateway_name="Pythoner", port="50051"):
+    with grpc.insecure_channel(f'localhost:{port}') as channel:
+        stub = service_pb2_grpc.LLMManagerStub(channel)
+        response = stub.ExtractCode(service_pb2.LLMRequest(msg=msg))
+        return response.msg
+
+
 async def listen_to_backend(callbacks, port="50051"):
     """"""
     async with grpc.aio.insecure_channel(f'localhost:{port}') as channel:

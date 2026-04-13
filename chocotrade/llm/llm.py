@@ -46,6 +46,9 @@ class LLMCore(BasePlugin[LLMConfig]):
         api_key = self.config.api_key
         self.model = self.config.model_name
         # self.client = OpenAI(api_key=api_key, base_url=base_url)
+        # base_url="http://localhost:11434/v1",
+        # model="qwen3:4b-instruct-2507-q4_K_M",
+        # api_key="YOUR_API_KEY"
         try:
             self.client = OpenAI(api_key=api_key, base_url=base_url)
         except Exception:

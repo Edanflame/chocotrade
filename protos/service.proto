@@ -192,3 +192,33 @@ service ConfigureManager {
   rpc SaveConfig (SaveConfigListRequest) returns (SaveConfigReply) {}
   rpc LoadConfig (LoadConfigRequest) returns (LoadConfigReply) {}
 }
+
+// Ipython
+message ExecuteRequest {
+  string code = 1;
+}
+
+message ExecuteReply {
+  string text_output = 1;      // 普通文本
+  bytes data_content = 2;      // 二进制数据（图片等）
+  string msg_type = 3;         // "stdout", "error", "display_data"
+  string mime_type = 4;        // "text/plain", "image/png"
+}
+
+service IpythonKernelManager {
+  rpc ExecuteCode (ExecuteRequest) returns (stream ExecuteReply);
+}
+
+// LLM
+message LLMRequest {
+  string msg = 1;
+}
+
+message LLMReply {
+  string msg = 1;
+}
+
+service LLMManager {
+  rpc AskStream (LLMRequest) returns (stream LLMRequest);
+  rpc ExtractCode (LLMRequest) returns (LLMReply);
+}
