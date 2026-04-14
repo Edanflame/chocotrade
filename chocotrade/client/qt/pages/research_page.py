@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ....utilities import _
 from ...client import ask_stream, extract_code, run_code
 
 COLORS = {
@@ -158,7 +159,7 @@ class NotebookCell(QFrame):
 
         self.code_box = QPlainTextEdit()
         self.code_box.setProperty("class", "CellEditor")
-        self.code_box.setPlaceholderText("... waiting for input")
+        self.code_box.setPlaceholderText(_("... waiting for input"))
         self.code_box.setFixedHeight(100) # 固定高度
         if code is not None:
             self.code_box.setPlainText(code)
@@ -226,10 +227,10 @@ class FloatingCommandBar(QFrame):
 
         self.input = QPlainTextEdit()
         self.input.setProperty("class", "FloatingInput")
-        self.input.setPlaceholderText("Enter multi-line code or strategy thoughts...")
+        self.input.setPlaceholderText(_("Enter multi-line code or strategy thoughts..."))
 
         btn_container = QVBoxLayout()
-        self.btn = QPushButton("CONFIRM")
+        self.btn = QPushButton(_("CONFIRM"))
         self.btn.setProperty("class", "FloatingConfirmBtn")
         self.btn.setCursor(Qt.PointingHandCursor)
         self.btn.setFixedSize(100, 40)
@@ -322,7 +323,7 @@ class ResearchPage(QWidget):
         chat_vbox = QVBoxLayout(self.chat_panel)
         chat_vbox.setContentsMargins(0, 0, 0, 0)
 
-        chat_header = QLabel("  QUANT AI ASSISTANT")
+        chat_header = QLabel(_("  QUANT AI ASSISTANT"))
         chat_header.setFixedHeight(50)
         chat_header.setStyleSheet(f"""
             font-weight: bold; color: {COLORS['primary']};

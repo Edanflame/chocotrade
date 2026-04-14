@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ....utilities import load_source
+from ....utilities import _, load_source
 
 T = {
     "bg": "#181210",
@@ -54,14 +54,14 @@ class MarketDataSelectionCard(BentoBox):
         super().__init__(style_class="bento-box-low")
 
         header = QHBoxLayout()
-        title = QLabel("Target Market Selection")
+        title = QLabel(_("Target Market Selection"))
         title.setProperty("class", "card-title")
         header.addWidget(title)
         header.addStretch()
 
-        tag1 = QLabel("EXCHANGE: COINBASE_PRO")
+        tag1 = QLabel(_("EXCHANGE: COINBASE_PRO"))
         tag1.setProperty("class", "tag-tertiary")
-        tag2 = QLabel("TYPE: SPOT")
+        tag2 = QLabel(_("TYPE: SPOT"))
         tag2.setProperty("class", "tag-tertiary")
         header.addWidget(tag1)
         header.addWidget(tag2)

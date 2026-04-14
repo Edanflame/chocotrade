@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ....utilities import _
 from ..dialogs.backtest_report_dialog import BacktestDetailDialog
 from ..dialogs.backtest_start_dialog import BacktestConfigDialog
 
@@ -218,7 +219,7 @@ class BacktestCard(QFrame):
         chart_layout = QVBoxLayout(chart_container)
 
         if is_processing:
-            proc_lbl = QLabel("Crunching historical tick data...")
+            proc_lbl = QLabel(_("Crunching historical tick data..."))
             proc_lbl.setProperty("class", "ProcessingLabel")
             proc_lbl.setAlignment(Qt.AlignCenter)
             chart_layout.addWidget(proc_lbl)
@@ -235,7 +236,7 @@ class BacktestCard(QFrame):
         self.update_overview_metric(stats, is_processing)
 
         # 4. 底部按钮
-        btn_text = "View Detailed Report" if not is_processing else "Processing Results"
+        btn_text = _("View Detailed Report") if not is_processing else _("Processing Results")
         self.footer_btn = QPushButton(btn_text)
         self.footer_btn.setProperty("class", "DetailButton")
         # 按钮文字颜色随状态标签变化
@@ -251,7 +252,7 @@ class BacktestCard(QFrame):
 
     def update_overview_metric(self, stats, is_processing):
         """更新数据网格"""
-        labels = ["Return", "Sharpe", "Drawdown"]
+        labels = [_("Return"), _("Sharpe"), _("Drawdown")]
         for i, stat in enumerate(stats):
             l_lbl = QLabel(labels[i].upper())
             l_lbl.setProperty("class", "GridHeaderLabel")
@@ -293,9 +294,9 @@ class BacktestCard(QFrame):
             False
         )
 
-        status = "finish"
+        status = _("finish")
         self.status_badge.setText(f" ●  {status}")
-        self.footer_btn.setText("View Detailed Report")
+        self.footer_btn.setText(_("View Detailed Report"))
         self.footer_btn.setEnabled(True)
 
     def open_report(self):
@@ -328,14 +329,14 @@ class NewTestCard(QFrame):
         plus_icon.setAlignment(Qt.AlignCenter)
         icon_layout.addWidget(plus_icon)
 
-        title = QLabel("Execute New Test")
+        title = QLabel(_("Execute New Test"))
         title.setProperty("class", "NewTestTitle")
 
-        desc = QLabel("Simulate your strategy against\nhistorical volatility pools.")
+        desc = QLabel(_("Simulate your strategy against\nhistorical volatility pools."))
         desc.setProperty("class", "NewTestDesc")
         desc.setAlignment(Qt.AlignCenter)
 
-        config_btn = QPushButton("Configure Engine")
+        config_btn = QPushButton(_("Configure Engine"))
         config_btn.setProperty("class", "ConfigButton")
         config_btn.setCursor(Qt.PointingHandCursor)
         config_btn.setFixedSize(160, 40)

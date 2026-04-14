@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ....utilities import load_source
+from ....utilities import _, load_source
 
 T = {
     "bg": "#181210",
@@ -56,9 +56,9 @@ class MarketDataBrowserCard(BentoBox):
 
         header = QHBoxLayout()
         v_box = QVBoxLayout()
-        title = QLabel("Local Market Data Browser")
+        title = QLabel(_("Local Market Data Browser"))
         title.setProperty("class", "card-title")
-        sub = QLabel("Manage and inspect historical data assets stored in the local vault.")
+        sub = QLabel(_("Manage and inspect historical data assets stored in the local vault."))
         sub.setStyleSheet(f"color: {T['outline']}; font-size: 12px;")
         v_box.addWidget(title)
         v_box.addWidget(sub)
@@ -199,7 +199,7 @@ class MarketDataBrowserCard(BentoBox):
 
             # 4. Actions
             c3_layout = QHBoxLayout()
-            inspect_btn = QPushButton("INSPECT")
+            inspect_btn = QPushButton(_("INSPECT"))
             inspect_btn.setProperty("class", "btn-action-small")
             inspect_btn.setCursor(QCursor(Qt.PointingHandCursor))
             c3_layout.addStretch()

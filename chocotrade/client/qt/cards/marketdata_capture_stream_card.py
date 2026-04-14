@@ -9,6 +9,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from ....utilities import _
+
 T = {
     "bg": "#181210",
     "surface": "#251e1c",
@@ -48,7 +50,7 @@ class BentoBox(QFrame):
 class MarketDataCaptreStreamCard(BentoBox):
     """"""
     def __init__(self):
-        super().__init__(title="Capture Stream", style_class="bento-box-low")
+        super().__init__(title=_("Capture Stream"), style_class="bento-box-low")
         self.tmp_rows = []
 
         self.log_area = QVBoxLayout()
@@ -72,7 +74,7 @@ class MarketDataCaptreStreamCard(BentoBox):
 
         self.layout.addLayout(self.log_area)
 
-        view_btn = QPushButton("VIEW FULL LOG CLOUD")
+        view_btn = QPushButton(_("VIEW FULL LOG CLOUD"))
         view_btn.setProperty("class", "btn-action-small")
         view_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.layout.addWidget(view_btn)

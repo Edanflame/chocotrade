@@ -1,0 +1,286 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-04-14 10:30+0800\n"
+"PO-Revision-Date: 2026-04-14 10:31+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+"X-Poedit-Basepath: ../../../..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:222
+msgid "Crunching historical tick data..."
+msgstr "处理历史逐笔交易数据…"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:239
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:299
+msgid "View Detailed Report"
+msgstr "回测报告"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:239
+msgid "Processing Results"
+msgstr "运行中"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:255
+msgid "Return"
+msgstr "回报率"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:255
+msgid "Sharpe"
+msgstr "夏普率"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:255
+msgid "Drawdown"
+msgstr "回撤"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:297
+msgid "finish"
+msgstr "完成"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:332
+msgid "Execute New Test"
+msgstr "执行新回测"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:335
+msgid ""
+"Simulate your strategy against\n"
+"historical volatility pools."
+msgstr ""
+"模拟你的策略\n"
+"历史波动率池。"
+
+#: chocotrade/client/qt/cards/backtest_outcome_card.py:339
+msgid "Configure Engine"
+msgstr "配置引擎"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:55
+msgid "Active Recording Session"
+msgstr "运行中录制"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:60
+msgid "Duration"
+msgstr "已运行时间"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:60
+msgid "Data Captured"
+msgstr "数据录制量"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:61
+msgid "Write Speed"
+msgstr "写入速度"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:78
+msgid "Buffer Capacity"
+msgstr "缓存容量"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:80
+msgid "14% Occupied"
+msgstr "14% 已占用"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:97
+msgid "Activate Session"
+msgstr "开始录制"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:106
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:136
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:156
+msgid "Resume Stream"
+msgstr "回复录制"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:115
+msgid "Export Partial"
+msgstr "部分导出"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:141
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:168
+msgid "Pause Stream"
+msgstr "暂停录制"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:149
+msgid "Activate  Session"
+msgstr "开始录制"
+
+#: chocotrade/client/qt/cards/marketdata_active_recoding_card.py:161
+msgid "Terminate Session"
+msgstr "结束录制"
+
+#: chocotrade/client/qt/cards/marketdata_capture_stream_card.py:53
+msgid "Capture Stream"
+msgstr "录制日志"
+
+#: chocotrade/client/qt/cards/marketdata_capture_stream_card.py:77
+msgid "VIEW FULL LOG CLOUD"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_local_data_browser_card.py:59
+msgid "Local Market Data Browser"
+msgstr "本地数据"
+
+#: chocotrade/client/qt/cards/marketdata_local_data_browser_card.py:61
+msgid "Manage and inspect historical data assets stored in the local vault."
+msgstr "管理和检查存储在本地保管库中的历史数据资产。"
+
+#: chocotrade/client/qt/cards/marketdata_local_data_browser_card.py:202
+msgid "INSPECT"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_selection_card.py:57
+msgid "Target Market Selection"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_selection_card.py:62
+msgid "EXCHANGE: COINBASE_PRO"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_selection_card.py:64
+msgid "TYPE: SPOT"
+msgstr "类型：现货"
+
+#: chocotrade/client/qt/cards/marketdata_storage_card.py:55
+msgid "Storage Vault"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_storage_card.py:72
+msgid "Primary NVMe"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_storage_card.py:75
+msgid "84.2% Full"
+msgstr ""
+
+#: chocotrade/client/qt/cards/marketdata_storage_card.py:121
+msgid "PURGE OLDER LOGS"
+msgstr ""
+
+#: chocotrade/client/qt/dialogs/marketdata_download_dialog.py:145
+#: chocotrade/client/qt/pages/marketdata_page.py:288
+msgid "Market Data Recorder"
+msgstr "市场行情录制"
+
+#: chocotrade/client/qt/dialogs/marketdata_download_dialog.py:149
+msgid "Configure your vault acquisition parameters"
+msgstr "配置参数"
+
+#: chocotrade/client/qt/dialogs/marketdata_download_dialog.py:162
+msgid "Download Historical Data"
+msgstr "下载历史数据"
+
+#: chocotrade/client/qt/dialogs/marketdata_download_dialog.py:162
+msgid "Record Live Data"
+msgstr "录制实时数据"
+
+#: chocotrade/client/qt/pages/backtest_page.py:81
+msgid "Backtest Outcomes"
+msgstr "回测结果"
+
+#: chocotrade/client/qt/pages/backtest_page.py:85
+msgid ""
+"Performance archives from the Velvet Vault engine. Compare historical yields."
+msgstr "Velvet Vault引擎的性能档案。对比历史收益率。"
+
+#: chocotrade/client/qt/pages/dashboard_page.py:45
+msgid "System Overview"
+msgstr "概览"
+
+#: chocotrade/client/qt/pages/dashboard_page.py:47
+msgid "Real-time health and operational status."
+msgstr "实时健康检测"
+
+#: chocotrade/client/qt/pages/marketdata_page.py:290
+msgid ""
+"Capture high-fidelity order book updates and trade                      "
+"streams into the encrypted vault for post-trade analysis."
+msgstr "将高保真订单簿更新和交易流捕获到加密保管库中，以进行交易后分析。"
+
+#: chocotrade/client/qt/pages/marketdata_page.py:305
+msgid "●  RECORDER ENGINE ONLINE"
+msgstr "● 录制中"
+
+#: chocotrade/client/qt/pages/plugins_page.py:350
+msgid "Plugin Management"
+msgstr "插件管理"
+
+#: chocotrade/client/qt/pages/plugins_page.py:356
+msgid ""
+"Extend the vault's capabilities. Connect to secure data interfaces,scale "
+"with enterprise databases, and bridge execution through global gateways."
+msgstr ""
+"扩展存储库的功能。连接到安全数据接口，与企业级数据库实现弹性扩展，并通过全球"
+"网关实现跨域执行。"
+
+#: chocotrade/client/qt/pages/plugins_page.py:366
+msgid " Upload Plugin"
+msgstr " 上传插件"
+
+#: chocotrade/client/qt/pages/plugins_page.py:386
+msgid "Active Vault Integrations"
+msgstr "已激活插件"
+
+#: chocotrade/client/qt/pages/plugins_page.py:445
+msgid "Available Plugins"
+msgstr "可用插件"
+
+#: chocotrade/client/qt/pages/research_page.py:162
+msgid "... waiting for input"
+msgstr "... 等待输入"
+
+#: chocotrade/client/qt/pages/research_page.py:230
+msgid "Enter multi-line code or strategy thoughts..."
+msgstr "请输入多行代码或策略思路……"
+
+#: chocotrade/client/qt/pages/research_page.py:233
+msgid "CONFIRM"
+msgstr "确认"
+
+#: chocotrade/client/qt/pages/research_page.py:326
+msgid "  QUANT AI ASSISTANT"
+msgstr "ai助手"
+
+#: chocotrade/client/qt_client.py:191 chocotrade/client/qt_client.py:238
+msgid "Dashboard"
+msgstr "面板"
+
+#: chocotrade/client/qt_client.py:191 chocotrade/client/qt_client.py:239
+msgid "Plugins"
+msgstr "插件"
+
+#: chocotrade/client/qt_client.py:191 chocotrade/client/qt_client.py:240
+msgid "Strategies"
+msgstr "策略"
+
+#: chocotrade/client/qt_client.py:191
+msgid "Backtest"
+msgstr "回测"
+
+#: chocotrade/client/qt_client.py:191 chocotrade/client/qt_client.py:242
+msgid "Market Data"
+msgstr "数据"
+
+#: chocotrade/client/qt_client.py:202
+msgid "Search parameters..."
+msgstr "搜索参数..."
+
+#: chocotrade/client/qt_client.py:241
+msgid "Backtests"
+msgstr "回测"
+
+#: chocotrade/client/qt_client.py:243
+msgid "Research"
+msgstr "研究"
+
+#: chocotrade/client/qt_client.py:264
+msgid "NEW STRATEGY"
+msgstr "新建策略"
+
+#: chocotrade/client/qt_client.py:269
+msgid " System Status"
+msgstr "系统状态"
+
+#: chocotrade/client/qt_client.py:274
+msgid " Logout"
+msgstr "注销"

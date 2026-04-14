@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ....utilities import load_source
+from ....utilities import _, load_source
 
 QSS = """
 QDialog {
@@ -142,11 +142,11 @@ class DataAcquisitionDialog(QDialog):
         header_layout.setAlignment(Qt.AlignCenter)
         header_layout.setSpacing(8)
 
-        title_label = QLabel("Market Data Recorder")
+        title_label = QLabel(_("Market Data Recorder"))
         title_label.setObjectName("mainTitle")
         title_label.setAlignment(Qt.AlignCenter)
 
-        subtitle_label = QLabel("Configure your vault acquisition parameters")
+        subtitle_label = QLabel(_("Configure your vault acquisition parameters"))
         subtitle_label.setObjectName("subTitle")
         subtitle_label.setAlignment(Qt.AlignCenter)
 
@@ -159,7 +159,7 @@ class DataAcquisitionDialog(QDialog):
         mode_layout.setSpacing(0)
 
         self.mode_group = QButtonGroup(self)
-        for i, text in enumerate(["Download Historical Data", "Record Live Data"]):
+        for i, text in enumerate([_("Download Historical Data"), _("Record Live Data")]):
             btn = QPushButton(text)
             btn.setCheckable(True)
             btn.setObjectName("modeButton")

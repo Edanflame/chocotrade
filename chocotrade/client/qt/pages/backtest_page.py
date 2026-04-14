@@ -4,6 +4,7 @@ import uuid
 from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import QFrame, QGridLayout, QLabel, QScrollArea, QVBoxLayout, QWidget
 
+from ....utilities import _
 from ...client import get_all_backtest_results, run_backtest
 from ..cards import BacktestCard, NewTestCard
 
@@ -77,11 +78,11 @@ class BacktestPage(QWidget):
 
         # 1. 标题头
         header = QVBoxLayout()
-        title = QLabel("Backtest Outcomes")
+        title = QLabel(_("Backtest Outcomes"))
         title.setObjectName("BacktestTitle")
 
         desc = QLabel(
-            "Performance archives from the Velvet Vault engine. Compare historical yields."
+            _("Performance archives from the Velvet Vault engine. Compare historical yields.")
         )
         desc.setObjectName("BacktestDesc")
 

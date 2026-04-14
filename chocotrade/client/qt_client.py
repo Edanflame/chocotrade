@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..utilities import load_source
+from ..utilities import _, load_source
 from .qt.pages.backtest_page import BacktestPage
 from .qt.pages.dashboard_page import DashboardPage
 from .qt.pages.marketdata_page import MarketDataPage
@@ -188,7 +188,7 @@ class TopBar(QFrame):
         # 中间当前页面标题
         layout.addSpacing(40)
         self.page_title_label_texts = [
-            "Dashboard", "Plugins", "Strategies", "Backtest", "Market Data"
+            _("Dashboard"), _("Plugins"), _("Strategies"), _("Backtest"), _("Market Data")
         ]
         self.page_title_label = QLabel("Dashboard")
         self.page_title_label.setObjectName("PageTitle")
@@ -199,7 +199,7 @@ class TopBar(QFrame):
         # 搜索框
         search = QLineEdit()
         search.setObjectName("TopSearch")
-        search.setPlaceholderText("Search parameters...")
+        search.setPlaceholderText(_("Search parameters..."))
         layout.addWidget(search)
 
         # 功能图标按钮
@@ -235,12 +235,12 @@ class SideBar(QFrame):
         # 导航组
         self.nav_btns = []
         self.menus = [
-            ("dashboard", "Dashboard", 0),
-            ("extension", "Plugins", 1),
-            ("query_stats", "Strategies", 2),
-            ("history_toggle_off", "Backtests", 3),
-            ("database", "Market Data", 4),
-            ("experiment", "Research", 5),
+            ("dashboard", _("Dashboard"), 0),
+            ("extension", _("Plugins"), 1),
+            ("query_stats", _("Strategies"), 2),
+            ("history_toggle_off", _("Backtests"), 3),
+            ("database", _("Market Data"), 4),
+            ("experiment", _("Research"), 5),
         ]
 
         for icon, text, index in self.menus:
@@ -261,17 +261,17 @@ class SideBar(QFrame):
         layout.addStretch()
 
         # 下方工具按钮
-        new_btn = QPushButton("NEW STRATEGY")
+        new_btn = QPushButton(_("NEW STRATEGY"))
         new_btn.setObjectName("NewStrategyBtn")
         layout.addWidget(new_btn)
 
         # 底部链接
-        status_btn = QPushButton(" System Status")
+        status_btn = QPushButton(_(" System Status"))
         status_btn.setProperty("class", "BottomLinkBtn")
         status_btn.setIcon(QIcon(str(load_source("src", "icons", "sensors2.svg"))))
         layout.addWidget(status_btn)
 
-        logout_btn = QPushButton(" Logout")
+        logout_btn = QPushButton(_(" Logout"))
         logout_btn.setProperty("class", "BottomLinkBtn")
         logout_btn.setIcon(QIcon(str(load_source("src", "icons", "logout2.svg"))))
         layout.addWidget(logout_btn)

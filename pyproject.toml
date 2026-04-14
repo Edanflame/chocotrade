@@ -49,7 +49,7 @@ wheel.packages = ["chocotrade"]
 
 [tool.setuptools.package-data]
 # 告诉工具包含 chocotrade 包下 scr 目录里的所有 png 文件
-chocotrade = ["scr/*.png"]
+chocotrade = ["scr/*.png", "locales/**/*.mo"]
 
 [dependency-groups]
 dev = [

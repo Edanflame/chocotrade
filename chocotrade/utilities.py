@@ -1,7 +1,9 @@
+import gettext
 import importlib
 import importlib.util
 import sys
 from importlib import resources
+from pathlib import Path
 
 from .config import settings
 
@@ -54,3 +56,16 @@ def load_source(*args):
     resource_path = resources.files("chocotrade").joinpath(*args)
     return resource_path
 
+
+def _i18n(lang_code="en"):
+    """"""
+    if lang_code == 'zh_CN':
+        local_path = Path(__file__).resolve().parent / "locales"
+        lang_zh = gettext.translation('messages', localedir=local_path, languages=['zh_CN'])
+        lang_zh.install()
+    else:
+        gettext.NullTranslations().install()
+
+    return gettext.gettext
+
+_ = _i18n()

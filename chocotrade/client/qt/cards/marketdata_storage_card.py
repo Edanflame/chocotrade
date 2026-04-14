@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ....utilities import load_source
+from ....utilities import _, load_source
 
 T = {
     "bg": "#181210",
@@ -52,7 +52,7 @@ class BentoBox(QFrame):
 class MarketDataStorageCard(BentoBox):
     """"""
     def __init__(self):
-        super().__init__(title="Storage Vault", style_class="bento-box-low")
+        super().__init__(title=_("Storage Vault"), style_class="bento-box-low")
 
         content = QFrame()
         c_layout = QVBoxLayout(content)
@@ -69,10 +69,10 @@ class MarketDataStorageCard(BentoBox):
             QIcon(str(load_source("src", "icons", "hard_drive.svg"))).pixmap(QSize(20, 20))
         )
 
-        l_name = QLabel("Primary NVMe")
+        l_name = QLabel(_("Primary NVMe"))
         l_name.setStyleSheet(f"color: {T['text_dim']}; font-size: 14px;")
 
-        l_perc = QLabel("84.2% Full")
+        l_perc = QLabel(_("84.2% Full"))
         l_perc.setStyleSheet(f"color: {T['text']}; font-weight: bold; font-size: 14px;")
 
         info.addWidget(nvme_icon)
@@ -118,7 +118,7 @@ class MarketDataStorageCard(BentoBox):
         warn_row.addWidget(warn_icon, stretch=0, alignment=Qt.AlignTop)
         warn_row.addWidget(warn_text, stretch=1, alignment=Qt.AlignTop)
 
-        purge_btn = QPushButton("PURGE OLDER LOGS")
+        purge_btn = QPushButton(_("PURGE OLDER LOGS"))
         purge_btn.setStyleSheet(f"""
             QPushButton {{
                 color: {T['primary']};

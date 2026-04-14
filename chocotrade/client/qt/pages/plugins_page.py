@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from ....base.plugin import PLUGINS
-from ....utilities import load_source
+from ....utilities import _, load_source
 from ...client import load_config, save_config
 from ..dialogs.plugin_config_dialog import PluginConfigDialog
 
@@ -347,22 +347,23 @@ class PluginManagementWidget(QWidget):
         header_layout = QHBoxLayout()
 
         header_text_vbox = QVBoxLayout()
-        title_lbl = QLabel("Plugin Management")
+        title_lbl = QLabel(_("Plugin Management"))
         title_lbl.setStyleSheet("""
             font-size: 36px; font-weight: 800; font-family: 'Manrope', sans-serif;
             margin-bottom: 8px; letter-spacing: -0.5px;
         """)
-        desc_lbl = QLabel("Extend the vault's capabilities. Connect to secure data interfaces,\
-            scale with enterprise databases, and bridge execution through global gateways.")
+        desc_lbl = QLabel(
+            _("Extend the vault's capabilities. Connect to secure data interfaces,"
+              "scale with enterprise databases, and bridge execution through global gateways."))
         desc_lbl.setStyleSheet(f"""
-            color: {COLORS['on_surface_variant']}; font-size: 15px; max-width: 600px;
+            color: {COLORS['on_surface_variant']}; font-size: 15px; max-width: 1000px;
         """)
         desc_lbl.setWordWrap(True)
 
         header_text_vbox.addWidget(title_lbl)
         header_text_vbox.addWidget(desc_lbl)
 
-        btn_upload = QPushButton(" Upload Plugin")
+        btn_upload = QPushButton(_(" Upload Plugin"))
         btn_upload.setIcon(QIcon(str(load_source("src", "icons", "upload_file.svg"))))
         btn_upload.setCursor(Qt.PointingHandCursor)
         btn_upload.setStyleSheet(f"""
@@ -382,7 +383,7 @@ class PluginManagementWidget(QWidget):
         content_layout.addSpacing(10)
 
         # --- Active Vault Integrations ---
-        sec_active = QLabel("Active Vault Integrations")
+        sec_active = QLabel(_("Active Vault Integrations"))
         sec_active.setStyleSheet(f"""
             color: {COLORS['primary']}; font-size: 20px;
             font-weight: bold; font-family: 'Manrope', sans-serif;
@@ -441,7 +442,7 @@ class PluginManagementWidget(QWidget):
         content_layout.addSpacing(20)
 
         # --- Available Plugins ---
-        sec_avail = QLabel("Available Plugins")
+        sec_avail = QLabel(_("Available Plugins"))
         sec_avail.setStyleSheet(f"""
             color: {COLORS['on_surface']}; font-size: 20px;
             font-weight: bold; font-family: 'Manrope', sans-serif;

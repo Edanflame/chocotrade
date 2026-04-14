@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ....utilities import _
 from ...client import add_record_symbol, get_overview, get_streaming_record, sync_data
 from ..cards.marketdata_active_recoding_card import MarketDataActivateCard
 from ..cards.marketdata_capture_stream_card import MarketDataCaptreStreamCard
@@ -284,10 +285,10 @@ class MarketDataPage(QWidget):
         header = QHBoxLayout()
         v_box = QVBoxLayout()
 
-        title = QLabel("Market Data Recorder")
+        title = QLabel(_("Market Data Recorder"))
         title.setProperty("class", "page-title")
-        sub = QLabel("Capture high-fidelity order book updates and trade \
-                     streams into the encrypted vault for post-trade analysis.")
+        sub = QLabel(_("Capture high-fidelity order book updates and trade \
+                     streams into the encrypted vault for post-trade analysis."))
         sub.setProperty("class", "page-subtitle")
         sub.setWordWrap(True)
 
@@ -301,7 +302,7 @@ class MarketDataPage(QWidget):
         b_layout = QHBoxLayout(badge_container)
         b_layout.setContentsMargins(2, 2, 2, 2)
 
-        status = QLabel("●  RECORDER ENGINE ONLINE")
+        status = QLabel(_("●  RECORDER ENGINE ONLINE"))
         status.setProperty("class", "status-badge")
         b_layout.addWidget(status)
 

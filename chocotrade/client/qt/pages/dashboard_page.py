@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ....utilities import _
 from ...qt.cards import (
     ActiveStrategiesCard,
     BacktestEngineCard,
@@ -41,9 +42,9 @@ class DashboardPage(QWidget):
         layout.setSpacing(25)
 
         # 总标题
-        h_title = QLabel("System Overview")
+        h_title = QLabel(_("System Overview"))
         h_title.setStyleSheet("font-size: 32px; font-weight: 800;")
-        h_sub = QLabel("Real-time health and operational status.")
+        h_sub = QLabel(_("Real-time health and operational status."))
         h_sub.setStyleSheet(f"color: {COLORS['on_surface_variant']};")
         layout.addWidget(h_title)
         layout.addWidget(h_sub)

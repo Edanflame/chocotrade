@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ....utilities import load_source
+from ....utilities import _, load_source
 from ...client import start_record, stop_record
 
 T = {
@@ -52,13 +52,13 @@ class BentoBox(QFrame):
 class MarketDataActivateCard(BentoBox):
     """"""
     def __init__(self):
-        super().__init__(title="Active Recording Session", style_class="bento-box-active")
+        super().__init__(title=_("Active Recording Session"), style_class="bento-box-active")
         self.is_paused = True
         self.is_terminated = True
 
         stats_layout = QHBoxLayout()
-        stats_data =[("Duration", "02:44:12", True), ("Data Captured", "14.82 GB", False),
-                     ("Write Speed", "124 MB/s", False)]
+        stats_data =[(_("Duration"), "02:44:12", True), (_("Data Captured"), "14.82 GB", False),
+                     (_("Write Speed"), "124 MB/s", False)]
 
         for label_text, val, is_primary in stats_data:
             box = QVBoxLayout()
@@ -75,9 +75,9 @@ class MarketDataActivateCard(BentoBox):
         prog_box = QVBoxLayout()
         prog_box.setSpacing(8)
         p_head = QHBoxLayout()
-        cap_l = QLabel("Buffer Capacity")
+        cap_l = QLabel(_("Buffer Capacity"))
         cap_l.setStyleSheet(f"color: {T['text_dim']}; font-size: 11px;")
-        occ_l = QLabel("14% Occupied")
+        occ_l = QLabel(_("14% Occupied"))
         occ_l.setStyleSheet(f"color: {T['text_dim']}; font-size: 11px;")
         p_head.addWidget(cap_l)
         p_head.addStretch()
@@ -94,7 +94,7 @@ class MarketDataActivateCard(BentoBox):
         self.layout.addLayout(prog_box)
 
         btn_layout = QHBoxLayout()
-        self.stop_btn = QPushButton("Activate Session")
+        self.stop_btn = QPushButton(_("Activate Session"))
         self.stop_btn.setIcon(
             QIcon(str(load_source("src", "icons", "play_dark.svg"))).pixmap(QSize(30, 30))
         )
@@ -103,7 +103,7 @@ class MarketDataActivateCard(BentoBox):
         self.stop_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.stop_btn.clicked.connect(self.toggle_stop)
 
-        self.pause_btn = QPushButton("Resume Stream")
+        self.pause_btn = QPushButton(_("Resume Stream"))
         self.pause_btn.setIcon(
             QIcon(str(load_source("src", "icons", "play.svg"))).pixmap(QSize(30, 30))
         )
@@ -112,7 +112,7 @@ class MarketDataActivateCard(BentoBox):
         self.pause_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.pause_btn.clicked.connect(self.toggle_pause)
 
-        export_btn = QPushButton("Export Partial")
+        export_btn = QPushButton(_("Export Partial"))
         export_btn.setIcon(
             QIcon(str(load_source("src", "icons", "download.svg"))).pixmap(QSize(30, 30))
         )
@@ -133,12 +133,12 @@ class MarketDataActivateCard(BentoBox):
 
         self.is_paused = not self.is_paused
         if self.is_paused:
-            self.pause_btn.setText("Resume Stream")
+            self.pause_btn.setText(_("Resume Stream"))
             self.pause_btn.setIcon(
                 QIcon(str(load_source("src", "icons", "play.svg"))).pixmap(QSize(30, 30))
             )
         else:
-            self.pause_btn.setText("Pause Stream")
+            self.pause_btn.setText(_("Pause Stream"))
             self.pause_btn.setIcon(
                 QIcon(str(load_source("src", "icons", "pause.svg"))).pixmap(QSize(30, 30))
             )
@@ -146,26 +146,26 @@ class MarketDataActivateCard(BentoBox):
     def toggle_stop(self):
         self.is_terminated = not self.is_terminated
         if self.is_terminated:
-            self.stop_btn.setText("Activate  Session")
+            self.stop_btn.setText(_("Activate  Session"))
             self.stop_btn.setIcon(
                 QIcon(str(load_source("src", "icons", "play_dark.svg"))).pixmap(QSize(30, 30))
             )
             stop_record()
 
             self.is_paused = True
-            self.pause_btn.setText("Resume Stream")
+            self.pause_btn.setText(_("Resume Stream"))
             self.pause_btn.setIcon(
                 QIcon(str(load_source("src", "icons", "play.svg"))).pixmap(QSize(30, 30))
             )
         else:
-            self.stop_btn.setText("Terminate Session")
+            self.stop_btn.setText(_("Terminate Session"))
             self.stop_btn.setIcon(
                 QIcon(str(load_source("src", "icons", "stop_dark.svg"))).pixmap(QSize(30, 30))
             )
             start_record()
 
             self.is_paused = False
-            self.pause_btn.setText("Pause Stream")
+            self.pause_btn.setText(_("Pause Stream"))
             self.pause_btn.setIcon(
                 QIcon(str(load_source("src", "icons", "pause.svg"))).pixmap(QSize(30, 30))
             )
