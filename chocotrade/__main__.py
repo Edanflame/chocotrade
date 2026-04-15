@@ -159,6 +159,28 @@ def qt_client():
     create_qt_client()
 
 
+# --- OPENCLAW ---
+@app.command(name="openclaw", help="Interface for openclaw")
+def openclaw_backtest(
+    symbol: str = typer.Option(..., "--symbol", "-s", help="合约代码")
+):
+    """"""
+    print(f"回测合约是{symbol}")
+    from .client.client import run_backtest
+    result = run_backtest(symbol=symbol)
+    print(result)
+
+
+@app.command(name="data", help="Interface for local data")
+def openclaw_data(
+    symbol: str = typer.Option("all", "--symbol", "-s", help="合约代码")
+):
+    """"""
+    from .client.client import get_overview
+    data = get_overview()
+    print(data)
+
+
 def main():
     app()
 

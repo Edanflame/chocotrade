@@ -28,7 +28,7 @@ def run_client_logic(name="Pythoner", port="50051"):
         return response.message
 
 
-def run_backtest(name="Pythoner", port="50051"):
+def run_backtest(symbol="",name="Pythoner", port="50051"):
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.BacktesterStub(channel)
         response = stub.StartBacktest(service_pb2.BacktestRequest(name=name))
