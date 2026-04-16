@@ -2,7 +2,7 @@
 import duckdb
 import polars as pl
 
-from ..base.database import BarsDatabase
+from ..base.database import BarsDatabase, DatabaseReadError
 from ..config import settings
 
 
@@ -95,15 +95,20 @@ class DuckBarsDatabase(BarsDatabase):
 
         return processed_df.to_dicts()
 
-    def query_bardata(self):
+    def query_bardata(self, symbol):
         """"""
         with self.con.cursor() as cur:
             data = cur.sql(
-                """
+                f"""
                 SELECT exchange, symbol, timestamp, open, high, low, close, volume FROM bars
+                WHERE symbol='{symbol}'
                 ORDER BY timestamp ASC
                 """
             ).pl()
+
+            if len(data) == 0:
+                raise DatabaseReadError(f"查询结束，但未能从 DuckDB 提取到 '{symbol}' 的任何数据。")
+
             return data
 
     def query_tickdata(self):

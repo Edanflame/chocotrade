@@ -255,7 +255,9 @@ class BacktestDetailDialog(QDialog):
         title_lbl = QLabel("Golden Croissant Arbitrage")
         title_lbl.setObjectName("MainTitle")
 
-        sub_lbl = QLabel("Execution Period: Jan 01, 2023 — Dec 31, 2023 • Intraday 15m")
+        start_time = self.display_date(backtest_result["start_date"])
+        end_time = self.display_date(backtest_result["end_date"])
+        sub_lbl = QLabel(f"Execution Period: {start_time} — {end_time} • Intraday 15m")
         sub_lbl.setObjectName("SubTitle")
 
         title_vbox.addWidget(tag)
@@ -278,7 +280,11 @@ class BacktestDetailDialog(QDialog):
 
         # 2. KPI 列表
         # Total Return
-        row_return = KPIRow("Total Return", "+42.84%", COLORS['primary'])
+        total_return = backtest_result["total_return"]
+        total_return_str = f"{total_return:.2f}%"
+        if total_return > 0:
+            total_return_str = "+" + total_return_str
+        row_return = KPIRow("Total Return", total_return_str, COLORS['primary'])
         chart_mock = QFrame()
         chart_mock.setFixedHeight(40)
         chart_mock.setStyleSheet("""
@@ -292,10 +298,11 @@ class BacktestDetailDialog(QDialog):
         content_layout.addWidget(row_return)
 
         # Sharpe Ratio
-        row_sharpe = KPIRow("Sharpe Ratio", "2.41")
+        sharpe_ratio = backtest_result["sharpe_ratio"]
+        row_sharpe = KPIRow("Sharpe Ratio", f"{sharpe_ratio:.2f}")
         bar = QProgressBar()
-        bar.setRange(0, 100)
-        bar.setValue(80)
+        bar.setRange(-3, 5)
+        bar.setValue(sharpe_ratio)
         bar.setTextVisible(False)
         bar.setFixedHeight(8)
         row_sharpe.add_viz(bar)
@@ -312,8 +319,9 @@ class BacktestDetailDialog(QDialog):
         # 动态加载结果
         if backtest_result:
             for key, value in backtest_result.items():
-                row_t = KPIRow(f"{key}", f"{value}")
-                content_layout.addWidget(row_t)
+                if key not in ["start_date", "end_date", "total_return", "sharpe_ratio"]:
+                    row_t = KPIRow(f"{key}", f"{value}")
+                    content_layout.addWidget(row_t)
 
         # 3. Parameter Optimization
         opt_box = QFrame()
@@ -363,3 +371,14 @@ class BacktestDetailDialog(QDialog):
         close_bar.addStretch()
         close_bar.addWidget(close_btn)
         main_layout.addLayout(close_bar)
+
+    def display_date(self, str_date: str):
+        """"""
+        month_map = {
+            "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "May", "06": "Jun",
+            "07": "Jul", "08": "Aug", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"
+        }
+
+        year, month, day = str_date.split("-")
+        return f"{month_map[month]} {day}, {year}"
+

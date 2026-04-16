@@ -260,15 +260,20 @@ class BacktestCard(QFrame):
             v_val = stat
             # 颜色逻辑保持在代码中，因为它是基于数据的逻辑
             v_color = "#ede0dc"
-            if not is_processing:
-                if "-" in v_val:
-                    v_color = "#ffb4ab"
-                elif "+" in v_val:
-                    v_color = "#4ade80"
-            else:
+            if is_processing:
                 v_color = "rgba(210,196,188,0.3)"
+                v_lbl = QLabel(v_val)
+            else:
+                if v_val > 0:
+                    v_color = "#ffb4ab"
+                elif v_val < 0:
+                    v_color = "#4ade80"
 
-            v_lbl = QLabel(v_val)
+                if i % 2 == 1:
+                    v_lbl = QLabel(f"{v_val:.2f}")
+                else:
+                    v_lbl = QLabel(f"{v_val * 100:.2f}%")
+
             v_lbl.setProperty("class", "GridValueLabel")
             v_lbl.setStyleSheet(f"color: {v_color};")
 
@@ -288,10 +293,10 @@ class BacktestCard(QFrame):
         self.backtest_result = data["backtest_result"]
 
         self.update_overview_metric(
-            ["+" + str(data["backtest_result"]["totalNetPnl"] / 1000) + "%",
-             str(data["backtest_result"]["sharpeRatio"]),
-             "-12%"],
-            False
+            [data["backtest_result"]["total_return"],
+             data["backtest_result"]["sharpe_ratio"],
+             data["backtest_result"]["max_ddpercent"]],
+             False
         )
 
         status = _("finish")

@@ -108,16 +108,16 @@ class BacktestPage(QWidget):
 
         # 加载初始模拟数据
         self.cards_data = [
-            ("Momentum Alpha", "Gold-Runner V4", "Optimized", ["+24.8%", "2.14", "-4.2%"],
-                [0.3, 0.5, 0.4, 0.8, 0.4, 0.7, 0.9], {}),
-            ("Mean Reversion", "Cocoa Arbitrage", "Legacy", ["+12.4%", "1.65", "-8.1%"],
-                [0.6, 0.5, 0.4, 0.5, 0.6, 0.5, 0.4], {}),
+            ("Momentum Alpha", "Gold-Runner V4", "Optimized", [0.248, 2.14, -0.042],
+                [0.3, 0.5, 0.4, 0.8, 0.4, 0.7, 0.9], {}, False),
+            ("Mean Reversion", "Cocoa Arbitrage", "Legacy", [0.124, 1.65, -0.081],
+                [0.6, 0.5, 0.4, 0.5, 0.6, 0.5, 0.4], {}, False),
             ("Sentiment Engine", "The Velvet Trend", "In-Progress", ["--", "--", "--"],
                 [], {}, True),
-            ("High Frequency", "Silver-Spike HFT", "Optimized", ["+31.2%", "3.42", "-2.1%"],
-                [0.5, 0.6, 0.8, 0.7, 0.9, 1.0, 0.9], {}),
-            ("Neutral Grid", "Steady Cream", "Legacy", ["+6.2%", "0.92", "-0.5%"],
-                [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], {}),
+            ("High Frequency", "Silver-Spike HFT", "Optimized", [0.312, 3.42, -0.021],
+                [0.5, 0.6, 0.8, 0.7, 0.9, 1.0, 0.9], {}, False),
+            ("Neutral Grid", "Steady Cream", "Legacy", [0.062, 0.92, -0.005],
+                [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], {}, False),
         ]
 
         self.refresh_grid_layout()
@@ -138,7 +138,7 @@ class BacktestPage(QWidget):
         for i, data in enumerate(self.cards_data):
             row, col = divmod(i, 3)
             card = BacktestCard(
-                data[0], data[1], data[2], data[3], data[4], data[5] if len(data) > 5 else False
+                data[0], data[1], data[2], data[3], data[4], data[5], data[6]
             )
             self.grid.addWidget(card, row, col)
 
@@ -236,7 +236,8 @@ class BacktestWorker(QObject):
     @Slot()
     def run(self):
         try:
-            result = run_backtest()
+            symbol = self.params["symbol"]
+            result = run_backtest(symbol)
 
             # 发送信号，必须带上 task_id，这样主线程才知道是谁的结果
             self.finished.emit(self.task_id, result)

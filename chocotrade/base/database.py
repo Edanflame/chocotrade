@@ -1,5 +1,9 @@
 """"""
 
+class DatabaseReadError(Exception):
+    """自定义异常：当数据库读取失败时触发"""
+    pass
+
 
 class Database:
     """"""

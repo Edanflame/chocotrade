@@ -6,7 +6,6 @@ from queue import Empty, Queue
 import grpc
 from google.protobuf.json_format import ParseDict
 
-from ..backtest import BacktestEngine
 from ..config import settings
 from ..core.engine import MainEngine
 from ..core.event import Event
@@ -25,7 +24,6 @@ logger = logging.getLogger("Backend")
 
 
 main_engine = MainEngine()
-backtest_engine = BacktestEngine()
 
 
 class GreeterServicer(service_pb2_grpc.GreeterServicer):
@@ -38,19 +36,27 @@ class GreeterServicer(service_pb2_grpc.GreeterServicer):
 
 class BacktesterServicer(service_pb2_grpc.BacktesterServicer):
     """"""
-    def __init__(self, backtest_engine=backtest_engine):
+    def __init__(self, engine=main_engine):
         """"""
         super().__init__()
-        self.backtest_engine = backtest_engine
+        self.backtest_engine = main_engine.backtest_engine
         self.backtest_engine.init()
+        self.backtest_engine.add_database(main_engine.get_database())
 
     def StartBacktest(self, request, context):
         """"""
         context_id = self.backtest_engine.add_strategy()
-        self.backtest_engine.load_data()
+        try:
+            self.backtest_engine.load_data(request.symbol)
 
-        self.backtest_engine.start(context_id)
-        result = self.backtest_engine.get_backtest_result(context_id)
+            self.backtest_engine.start(context_id)
+            result = self.backtest_engine.get_backtest_result(context_id)
+            result["error_code"] = 0
+        except Exception as e:
+            logger.info(e)
+            result = self.backtest_engine.get_empty_result()
+            result["error_code"] = 1
+
         return service_pb2.BacktestResultReply(**result)
 
     def GetAllBacktestResults(self, request, context):

@@ -165,10 +165,12 @@ def openclaw_backtest(
     symbol: str = typer.Option(..., "--symbol", "-s", help="合约代码")
 ):
     """"""
-    print(f"回测合约是{symbol}")
     from .client.client import run_backtest
     result = run_backtest(symbol=symbol)
-    print(result)
+    if result.get("error_code"):
+        print("找不到合约")
+    else:
+        print(result)
 
 
 @app.command(name="data", help="Interface for local data")

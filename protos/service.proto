@@ -22,7 +22,7 @@ service Greeter {
 
 // 回测服务
 message BacktestRequest {
-  string name = 1;
+  string symbol = 1;
 }
 
 message BacktestResultReply {
@@ -58,6 +58,8 @@ message BacktestResultReply {
   float ewm_sharpe = 25;
   float return_drawdown_ratio = 26;
   float rgr_ratio = 27;
+
+  uint32 error_code = 28;
 }
 
 message BacktestListReply {

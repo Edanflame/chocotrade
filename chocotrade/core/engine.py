@@ -1,9 +1,10 @@
 """"""
 from threading import Lock
 
+from ..backtest import BacktestEngine
 from ..base.gateway import BaseGateway
 from ..data_record.data_record import RecorderEngine
-from ..database.sqlite_database import SqliteBoxDatabase
+from ..database.duckdb_database import DuckBarsDatabase
 from .datatype import Exchange, SubscribeRequest
 from .event import Event, EventEngine, EventType, Handler
 from .plugin_manager import PluginManager
@@ -25,6 +26,8 @@ class MainEngine:
     def __init__(self) -> None:
         """"""
         self.plugin_manager = PluginManager()
+        self.backtest_engine = BacktestEngine()
+        self.database = DuckBarsDatabase()
 
     def __new__(cls):
         """Singleton Pattern"""
@@ -73,6 +76,10 @@ class MainEngine:
     ) -> None:
         """"""
         self._gms_engine.subscribe(gateway_id, symbol)
+
+    def get_database(self):
+        """"""
+        return self.database
 
     def add_plugin(self, plugin_name, plugin):
         """"""
@@ -252,7 +259,6 @@ class CmsEngine:
         """"""
         self.main = main_controller
         self.configs: dict[str, dict] = {}
-        self.config_database = SqliteBoxDatabase()
 
     def save_config(self, category, name, config: dict) -> None:
         """"""

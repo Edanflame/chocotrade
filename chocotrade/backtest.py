@@ -8,7 +8,6 @@ import polars as pl
 
 from .core.constant import Direction, Exchange, Offset, OrderType, Status
 from .core.datatype import OrderData, TradeData
-from .database import DuckBarsDatabase
 from .datastream import DataStream
 from .strategies import CtaStrategy
 
@@ -298,6 +297,7 @@ class BacktestEngine:
         self.strategy_contexts: dict = {}
         self.backtest_results: dict = {}
         self.raw_data: pl.DataFrame = None
+        self.db = None
 
     def init(self):
         """"""
@@ -311,6 +311,19 @@ class BacktestEngine:
 
         self.strategy_contexts[id(context)] = context
         return id(context)
+
+    def add_database(self, db):
+        """"""
+        self.db = db
+
+    def load_data(self, symbol):
+        """"""
+        try:
+            data = self.db.query_bardata(symbol)
+        except Exception as e:
+            raise e
+
+        self.raw_data = data
 
     def list_contexts(self):
         """"""
@@ -337,6 +350,11 @@ class BacktestEngine:
         if not context_id:
             return {}
         return self.backtest_results[context_id]
+
+    def get_empty_result(self):
+        """"""
+        result = BacktestResult()
+        return result.to_dict()
 
     def _run_simulation(self, context):
         """"""
@@ -385,6 +403,8 @@ class BacktestEngine:
     def _calculate_statistics(self, context, df):
         """"""
         self.annual_days = 255
+        self.risk_free = 0.02
+        self.half_life = 20
         self.capital = 100000
 
         result = BacktestResult()
@@ -393,13 +413,21 @@ class BacktestEngine:
         if df.is_empty():
             return result.to_dict()
 
+        df = df.drop("trades")
+        df.write_parquet("~/data.parquet")
+
         # 计算是否出现资产低于0
         df = df.lazy()
         df = df.with_columns((pl.col("net_pnl").cum_sum() + self.capital).alias("balance"))
         df = df.with_columns([
-            pl.when(pl.col("balance") > 0)
-            .then((pl.col("balance") / pl.col("balance").shift(1).fill_null(self.capital)).log())
-            .otherwise(0)
+            pl.when(
+                (pl.col("balance") / pl.col("balance").shift(1).fill_null(self.capital)) > 0
+            )
+            .then(
+                (pl.col("balance") / pl.col("balance").shift(1).fill_null(self.capital)).log()
+            )
+            .otherwise(0.0)
+            .fill_null(0.0)
             .alias("return")
         ])
         df = df.collect()
@@ -411,46 +439,36 @@ class BacktestEngine:
         # 计算统计指标
         df = df.with_columns(
             pl.col("balance").cum_max().alias("highlevel")
-        ).with_columns([
-            (pl.col("balance") - pl.col("highlevel")).alias("drawdown"),
-            ((pl.col("balance") - pl.col("highlevel")) / pl.col("highlevel") * 100)
-            .alias("ddpercent")
-        ])
+        ).with_columns(
+            (pl.col("balance") - pl.col("highlevel")).alias("drawdown")
+        ).with_columns(
+            (pl.col("drawdown") / pl.col("highlevel")).alias("ddpercent")
+        )
 
-        res = df.select([
-            pl.col("date").first().dt.to_string("%Y-%m-%d").alias("start_date"),
-            pl.col("date").last().dt.to_string("%Y-%m-%d").alias("end_date"),
-            pl.len().alias("total_days"),
-            (pl.col("net_pnl") > 0).sum().alias("profit_days"),
-            (pl.col("net_pnl") < 0).sum().alias("loss_days"),
-            pl.col("balance").last().alias("end_balance"),
-            pl.col("drawdown").min().alias("max_drawdown"),
-            pl.col("ddpercent").min().alias("max_ddpercent"),
-            pl.col("drawdown").arg_min().alias("max_drawdown_end_idx"), # 拿到最大回撤结束时的行号
-            pl.col("net_pnl").sum().alias("total_net_pnl"),
-            pl.col("net_pnl").mean().alias("daily_net_pnl"),
-            pl.col("commission").sum().alias("total_commission"),
-            pl.col("commission").mean().alias("daily_commission"),
-            pl.col("slippage").sum().alias("total_slippage"),
-            pl.col("slippage").mean().alias("daily_slippage"),
-            pl.col("turnover").sum().alias("total_turnover"),
-            pl.col("turnover").mean().alias("daily_turnover"),
-            pl.col("trade_count").sum().alias("total_trade_count"),
-            pl.col("trade_count").sum().alias("daily_trade_count"),
-            ((pl.col("balance").last() / self.capital - 1) * 100).alias("total_return"),
-            (((pl.col("balance").last() / self.capital - 1) * 100) /
-            pl.len() * self.annual_days).alias("annual_return"),
-            pl.col("return").mean().alias("daily_return"),
-            pl.col("return").std().alias("return_std"),
 
-            (pl.col("return").mean() / pl.col("return").std() * (self.annual_days**0.5))
-            .alias("sharpe_ratio"),
+        result.start_date = df["date"][0].strftime("%Y-%m-%d")
+        result.end_date = df["date"][-1].strftime("%Y-%m-%d")
+        result.total_days = df.select(
+            pl.len()
+        ).item()
+        result.profit_days = df.select(
+            (pl.col("net_pnl") > 0).sum()
+        ).item()
+        result.loss_days = df.select(
+            (pl.col("net_pnl") < 0).sum()
+        ).item()
+        result.end_balance = df["balance"][-1]
+        result.max_drawdown = df.select(
+            pl.col("drawdown").min()
+        ).item()
+        result.max_ddpercent = df.select(
+            pl.col("ddpercent").min()
+        ).item()
+        result.max_ddpercent = df.select(
+            pl.col("ddpercent").min()
+        ).item()
 
-            ((pl.col("balance").last() / self.capital - 1) / pl.len() * self.annual_days /
-            pl.col("ddpercent").min().abs()).alias("return_drawdown_ratio"),
-        ])
-
-        max_drawdown_end_idx = res["max_drawdown_end_idx"][0]
+        max_drawdown_end_idx = df.select(pl.col("drawdown").arg_min()).item()
         if max_drawdown_end_idx is not None:
             max_drawdown_end = df["date"][max_drawdown_end_idx]
 
@@ -458,39 +476,64 @@ class BacktestEngine:
             max_drawdown_start = df["date"][max_drawdown_start_idx]
 
             delta = max_drawdown_end - max_drawdown_start
-            max_drawdown_duration = delta.days
+            result.max_drawdown_duration = delta.days
         else:
-            max_drawdown_duration = 0
+            result.max_drawdown_duration = 0
 
-        result.start_date = res["start_date"][0]
-        result.end_date = res["end_date"][0]
-        result.total_days = res["total_days"][0]
-        result.profit_days = res["profit_days"][0]
-        result.loss_days = res["loss_days"][0]
-        result.end_balance = res["end_balance"][0]
-        result.max_drawdown = res["max_drawdown"][0]
-        result.max_ddpercent = res["max_ddpercent"][0]
-        result.total_net_pnl = res["total_net_pnl"][0]
-        result.daily_net_pnl = res["daily_net_pnl"][0]
-        result.total_commission = res["total_commission"][0]
-        result.daily_commission = res["daily_commission"][0]
-        result.total_slippage = res["total_slippage"][0]
-        result.daily_slippage = res["daily_slippage"][0]
-        result.total_turnover = res["total_turnover"][0]
-        result.daily_turnover = res["daily_turnover"][0]
-        result.total_trade_count = res["total_trade_count"][0]
-        result.daily_trade_count = res["daily_trade_count"][0]
-        result.total_return = res["total_return"][0]
-        result.annual_return = res["annual_return"][0]
-        result.daily_return = res["daily_return"][0]
-        result.return_std = res["return_std"][0]
-        result.sharpe_ratio = res["return_std"][0]
-        # result.return_drawdown_ratio = res["return_drawdown_ratio"][0]
-        result.return_drawdown_ratio = 0
+        result.total_net_pnl = df.select(
+            pl.col("net_pnl").sum()
+        ).item()
+        result.daily_net_pnl = df.select(
+            pl.col("net_pnl").mean()
+        ).item()
+        result.total_commission = df.select(
+            pl.col("commission").sum()
+        ).item()
+        result.daily_commission = df.select(
+            pl.col("commission").mean()
+        ).item()
+        result.total_slippage = df.select(
+            pl.col("slippage").sum()
+        ).item()
+        result.daily_slippage = df.select(
+            pl.col("slippage").mean()
+        ).item()
+        result.total_turnover = df.select(
+            pl.col("turnover").sum()
+        ).item()
+        result.daily_turnover = df.select(
+            pl.col("turnover").mean()
+        ).item()
+        result.total_trade_count = df.select(
+            pl.col("trade_count").sum()
+        ).item()
+        result.daily_trade_count = df.select(
+            pl.col("trade_count").mean()
+        ).item()
+        result.total_return = (df["balance"][-1] / self.capital -1)
+        result.annual_return = result.total_return * self.annual_days / result.total_days
+        result.daily_return = df.select(
+            pl.col("return").mean()
+        ).item()
+        result.return_std = df.select(
+            pl.col("return").std()
+        ).item()
 
-        result.max_drawdown_duration = max_drawdown_duration
-        result.ewm_sharpe = 0
-        result.rgr_ratio = 0
+        daily_risk_free: float = self.risk_free / np.sqrt(self.annual_days)
+        result.sharpe_ratio = (result.daily_return - daily_risk_free) / result.return_std /\
+            np.sqrt(self.annual_days)
+
+        df = df.with_columns([
+            (pl.col("return").ewm_mean(half_life=self.half_life, adjust=True) * 100)
+            .alias("ewm_mean"),
+            (pl.col("return").ewm_std(half_life=self.half_life, adjust=True) * 100)
+            .alias("ewm_std")
+        ]).with_columns(
+            ((pl.col("ewm_mean") - daily_risk_free) / pl.col("ewm_std") /\
+             pl.lit(self.annual_days).sqrt()).alias("ewm_sharpe")
+        )
+
+        result.ewm_sharpe = df["ewm_sharpe"][-1]
 
         return result.to_dict()
 
@@ -517,12 +560,6 @@ class BacktestEngine:
         is_all_positive = df.select((pl.col("balance") > 0).all()).item()
 
         return is_all_positive
-
-    def load_data(self):
-        """"""
-        db = DuckBarsDatabase()
-        data = db.query_bardata()
-        self.raw_data = data
 
 
 class RollingWindow:
@@ -564,24 +601,3 @@ class RollingWindow:
         """The  property."""
         window = self.get_window()[-window:]
         return np.mean(window)
-
-
-def run_test():
-    """"""
-    db = DuckBarsDatabase()
-    data = db.query_bardata()
-
-    backtest = BacktestEngine()
-    backtest.init()
-    backtest.add_strategy()
-    backtest.load_data(data)
-
-    context_id = backtest.list_contexts()[0]
-    backtest.start(context_id)
-    result = backtest.list_backtest_results(context_id)[0]
-    return result
-
-
-if __name__ == "__main__":
-    """"""
-    run_test()

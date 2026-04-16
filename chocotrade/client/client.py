@@ -31,9 +31,8 @@ def run_client_logic(name="Pythoner", port="50051"):
 def run_backtest(symbol="",name="Pythoner", port="50051"):
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.BacktesterStub(channel)
-        response = stub.StartBacktest(service_pb2.BacktestRequest(name=name))
-        result = MessageToDict(response)
-        logger.info("回测完成")
+        response = stub.StartBacktest(service_pb2.BacktestRequest(symbol=symbol))
+        result = MessageToDict(response, preserving_proto_field_name=True)
         return result
 
 
@@ -41,7 +40,7 @@ def get_backtest_result(name="Pythoner", port="50051"):
     with grpc.insecure_channel(f'localhost:{port}') as channel:
         stub = service_pb2_grpc.BacktesterStub(channel)
         response = stub.GetTargetBacktestResult(service_pb2.BacktestRequest(name=name))
-        result = MessageToDict(response)
+        result = MessageToDict(response, preserving_proto_field_name=True)
         logger.info("回测结果查询完成")
         return result
 

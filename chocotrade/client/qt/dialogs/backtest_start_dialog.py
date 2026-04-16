@@ -76,9 +76,14 @@ class BacktestConfigDialog(QDialog):
         grid_layout.setSpacing(15)
 
         # 策略名称
-        grid_layout.addWidget(self.create_label("STRATEGY NAME"), 0, 0, 1, 2)
+        grid_layout.addWidget(self.create_label("STRATEGY NAME"), 0, 0, 1, 1)
         self.strategy_input = QLineEdit("Momentum_Arbitrage_v4")
-        grid_layout.addWidget(self.strategy_input, 1, 0, 1, 2)
+        grid_layout.addWidget(self.strategy_input, 1, 0, 1, 1)
+
+        grid_layout.addWidget(self.create_label("SYMBOL NAME"), 0, 1, 1, 1)
+        self.symbol_input = QLineEdit()
+        grid_layout.addWidget(self.symbol_input, 1, 1, 1, 1)
+
 
         # 数据源 (完美暗黑下拉框 - 绝杀方案)
         grid_layout.addWidget(self.create_label("DATABASE SOURCE"), 2, 0)
@@ -215,6 +220,7 @@ class BacktestConfigDialog(QDialog):
         """打包所有配置数据"""
         return {
             "strategy_name": self.strategy_input.text(),
+            "symbol": self.symbol_input.text(),
             "database": self.db_combo.currentText(),
             "frequency": self.freq_group.checkedButton().text(), # 获取选中的按钮文字
             "start_date": self.start_date.date().toPython(),    # 转为 Python datetime.date
