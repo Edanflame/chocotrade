@@ -1,0 +1,22 @@
+name: Bump Homebrew Formula
+
+on:
+  release:
+    types: [published] # 当你在主库点击 "Publish Release" 时触发
+
+jobs:
+  homebrew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Homebrew formula
+        uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          # 你的 Tap 仓库全名
+          homebrew-tap: Edanflame/homebrew-tap 
+          # 你的 Formula 名字（通常和项目名一致）
+          formula-name: chocotrade
+          # 如果你的 .rb 文件在 Tap 库的子目录下（比如 Formula/），请指定
+          formula-path: Formula/chocotrade.rb
+          download-url: https://github.com/${{ github.repository }}/archive/refs/tags/${{ github.event.release.tag_name }}.tar.gz
+        env:
+          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
