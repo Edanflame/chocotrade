@@ -18,7 +18,7 @@ EXCHANGE_MAP = {
 
 
 class TushareConfig(BaseSettings):
-    token: str
+    token: str = ""
 
     model_config = SettingsConfigDict(
         env_file=CHOCO_ENV_FILE,

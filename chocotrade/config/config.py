@@ -26,6 +26,9 @@ class Settings(BaseSettings):
         if not plugins_dir.exists():
             plugins_dir.mkdir(parents=True, exist_ok=True)
 
+        if not (v / ".env").exists():
+            (v / ".env").touch()
+
         return v
 
     @property

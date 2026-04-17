@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .._version import __version__
 from ..utilities import _, load_source
 from .qt.pages.backtest_page import BacktestPage
 from .qt.pages.dashboard_page import DashboardPage
@@ -317,8 +318,8 @@ class StrategiesPage(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Chocotrade v0.1.0")
-        self.resize(1280, 850)
+        self.setWindowTitle(f"Chocotrade v{__version__}")
+        self.resize(1280, 800)
 
         # 核心框架布局
         self.central = QWidget()
